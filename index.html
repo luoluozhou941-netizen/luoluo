@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -274,6 +275,14 @@
             margin-top: 50px !important; 
             width: clamp(320px, 80%, 400px) !important;
         }
+        /* 新增1：红米Note13 Pro + Edge 专属适配（修复全屏不一致） */
+        @media (min-width: 431px) and (max-width: 1080px) {
+            .is-edge.phone.fullscreen .app-grid {
+                margin-top: clamp(60px, 8vw, 100px) !important; /* 与红米Note13 Pro通用样式统一 */
+                width: 100% !important; /* 强制占满最大宽度，避免两种宽度效果 */
+                max-width: var(--fullscreen-max-width) !important;
+            }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -361,6 +370,21 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && isFull) {
                 fullBtn.click();
+            }
+        });
+
+        // 新增2：红米Note13 Pro全屏状态重置（避免缓存导致两种效果）
+        window.addEventListener('load', () => {
+            // 识别红米Note13 Pro视口（>430px，匹配原有媒体查询）+ Edge浏览器
+            if (window.innerWidth > 430 && isEdgeBrowser) {
+                // 强制重置全屏状态，统一渲染效果
+                // 移除isFull条件，确保Edge浏览器在红米Note13 Pro上统一渲染
+                phone.classList.remove('fullscreen');
+                setTimeout(() => {
+                    phone.classList.add('fullscreen');
+                    phone.style.width = '100vw';
+                    phone.style.height = '100vh';
+                }, 50);
             }
         });
     </script>
