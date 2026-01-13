@@ -132,49 +132,26 @@
             grid-template-rows: repeat(4, 1fr);
             gap: clamp(6.67px, 2vw, 12px);
         }
-        /* 媒体查询：按视口顺序排序 */
-        /* 1. 红米Note12谷歌浏览器（视口≤370px） */
+        /* 媒体查询：保留原有其他机型适配 */
         @media (max-width: 370px) {
-            .phone.fullscreen .app-grid {
-                margin-top: clamp(50px, 3.5vw, 90px);
-            }
+            .phone.fullscreen .app-grid { margin-top: clamp(50px, 3.5vw, 90px); }
         }
-        /* 2. iPhone XS/XR（视口=375px） */
         @media (width: 375px) {
-            .phone.fullscreen .app-grid {
-                margin-top: 100px;
-            }
+            .phone.fullscreen .app-grid { margin-top: 100px; }
         }
-        /* 3. 红米Note12自带浏览器/红米Note12Turbo（371px-380px） */
         @media (min-width: 371px) and (max-width: 380px) {
-            .phone.fullscreen .app-grid {
-                margin-top: clamp(60px, 4vw, 100px);
-            }
+            .phone.fullscreen .app-grid { margin-top: clamp(60px, 4vw, 100px); }
         }
-        /* 4. iPhone 14 Pro（381px-400px） */
         @media (min-width: 381px) and (max-width: 400px) {
-            .phone.fullscreen .app-grid {
-                margin-top: clamp(15px, 3vw, 40px) !important;
-                margin-bottom: 30px !important;
-            }
-            .phone.fullscreen .nav-bar {
-                bottom: calc(env(safe-area-inset-bottom) + 20px) !important;
-            }
-            .phone.fullscreen .app-grid {
-                max-height: clamp(300px, 50vh, 400px) !important;
-            }
+            .phone.fullscreen .app-grid { margin-top: clamp(15px, 3vw, 40px) !important; margin-bottom: 30px !important; }
+            .phone.fullscreen .nav-bar { bottom: calc(env(safe-area-inset-bottom) + 20px) !important; }
+            .phone.fullscreen .app-grid { max-height: clamp(300px, 50vh, 400px) !important; }
         }
-        /* 5. 华为Mate60（401px-430px） */
         @media (min-width: 401px) and (max-width: 430px) {
-            .phone.fullscreen .app-grid {
-                margin-top: clamp(70px, 7vw, 110px);
-            }
+            .phone.fullscreen .app-grid { margin-top: clamp(70px, 7vw, 110px); }
         }
-        /* 6. 红米Note13 Pro（>430px） */
         @media (min-width: 431px) {
-            .phone.fullscreen .app-grid {
-                margin-top: clamp(60px, 8vw, 100px);
-            }
+            .phone.fullscreen .app-grid { margin-top: clamp(60px, 8vw, 100px); }
         }
         /* 卡片样式 */
         .widget-period {
@@ -184,10 +161,7 @@
             grid-row: 1 / span 2;
             aspect-ratio: 1/1;
         }
-        .phone.fullscreen .widget-period {
-            width: 100%;
-            height: auto;
-        }
+        .phone.fullscreen .widget-period { width: 100%; height: auto; }
         .app-icon {
             width: 65px;
             height: 65px;
@@ -199,75 +173,39 @@
             justify-content: center;
         }
         .phone.fullscreen .app-icon {
-            width: 100%;
-            height: 100%;
-            min-width: clamp(65px, 12vw, 80px);
-            min-height: clamp(65px, 12vw, 80px);
-            max-width: clamp(65px, 12vw, 80px);
-            max-height: clamp(65px, 12vw, 80px);
+            width: 100%; height: 100%;
+            min-width: clamp(65px, 12vw, 80px); min-height: clamp(65px, 12vw, 80px);
+            max-width: clamp(65px, 12vw, 80px); max-height: clamp(65px, 12vw, 80px);
         }
         .widget-badge {
-            width: 135px;
-            height: 135px;
-            border-radius: 50%;
-            grid-column: 3 / span 2;
-            grid-row: 3 / span 2;
-            aspect-ratio: 1/1;
+            width: 135px; height: 135px; border-radius: 50%;
+            grid-column: 3 / span 2; grid-row: 3 / span 2; aspect-ratio: 1/1;
         }
-        .phone.fullscreen .widget-badge {
-            width: 100%;
-            height: auto;
-        }
+        .phone.fullscreen .widget-badge { width: 100%; height: auto; }
         .nav-bar {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-            height: 70px;
-            background: rgba(255, 255, 255, 0.85);
-            border-radius: 18px;
-            border: 1px solid #f8c8dc;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 1;
+            position: absolute; bottom: 10px; left: 10px; right: 10px;
+            height: 70px; background: rgba(255,255,255,0.85);
+            border-radius: 18px; border: 1px solid #f8c8dc;
+            display: flex; justify-content: space-around; align-items: center; z-index: 1;
         }
         .phone.fullscreen .nav-bar {
-            position: fixed;
-            bottom: clamp(10px, 1.2vw, 20px);
-            left: 50%;
-            transform: translateX(-50%);
-            width: clamp(280px, var(--fullscreen-max-width), 600px);
-            height: clamp(70px, 9vw, 90px);
+            position: fixed; bottom: clamp(10px, 1.2vw, 20px); left: 50%; transform: translateX(-50%);
+            width: clamp(280px, var(--fullscreen-max-width), 600px); height: clamp(70px, 9vw, 90px);
         }
         .nav-item {
-            width: 60px;
-            height: 60px;
-            background: rgba(216, 163, 187, 0.1);
-            border-radius: 16px;
-            border: 1px solid #f8c8dc;
+            width: 60px; height: 60px; background: rgba(216,163,187,0.1);
+            border-radius: 16px; border: 1px solid #f8c8dc;
         }
         .phone.fullscreen .nav-item {
-            width: clamp(60px, 8vw, 75px);
-            height: clamp(60px, 8vw, 75px);
+            width: clamp(60px, 8vw, 75px); height: clamp(60px, 8vw, 75px);
         }
         .fullscreen-btn {
-            position: absolute;
-            top: 40px;
-            right: 20px;
-            padding: 5px 10px;
-            background: #f8c8dc;
-            color: #fff;
-            border: none;
-            border-radius: 15px;
-            font-size: 12px;
-            cursor: pointer;
-            z-index: 10;
+            position: absolute; top: 40px; right: 20px;
+            padding: 5px 10px; background: #f8c8dc; color: #fff;
+            border: none; border-radius: 15px; font-size: 12px; cursor: pointer; z-index: 10;
             transition: background 0.3s;
         }
-        .fullscreen-btn:hover {
-            background: #e8b8cc;
-        }
+        .fullscreen-btn:hover { background: #e8b8cc; }
         /* 红米Note13 Pro + Edge 专属最高优先级适配（必生效） */
         @media (min-width: 431px) and (max-width: 1080px) {
             .phone.is-edge.fullscreen .app-grid {
@@ -294,9 +232,9 @@
                 <i class="fas fa-battery-three-quarters"></i>
             </div>
         </div>
-        <div class="content">
+        <div class="content" id="content">
             <div class="widget widget-anniversary"></div>
-            <div class="app-grid" id="appGrid"> <!-- 新增ID，方便JS精准控制 -->
+            <div class="app-grid" id="appGrid">
                 <div class="widget widget-period"></div>
                 <div class="app-icon" style="grid-column: 3; grid-row: 1;"></div>
                 <div class="app-icon" style="grid-column: 4; grid-row: 1;"></div>
@@ -320,11 +258,15 @@
     <script>
         const phone = document.getElementById('phone');
         const fullBtn = document.getElementById('fullBtn');
-        const appGrid = document.getElementById('appGrid'); // 新增：获取应用网格元素
+        const appGrid = document.getElementById('appGrid');
+        const content = document.getElementById('content');
         let isFull = false;
         
-        // 检测Edge浏览器
+        // 检测Edge浏览器（精准匹配）
         const isEdgeBrowser = /Edg\/|Microsoft Edge/i.test(navigator.userAgent);
+        // 检测红米Note13 Pro（根据视口宽度判断）
+        const isHongmiNote13Pro = window.innerWidth > 430;
+        
         if (isEdgeBrowser) {
             phone.classList.add('is-edge');
         }
@@ -340,10 +282,15 @@
                 phone.style.width = '100vw';
                 phone.style.height = '100vh';
                 
-                // 强制给红米Note13 Pro+Edge设置应用网格上移（JS内联样式，优先级最高）
-                if (window.innerWidth > 430 && isEdgeBrowser) {
+                // 红米Note13 Pro + Edge 专属强制设置
+                if (isEdgeBrowser && isHongmiNote13Pro) {
+                    // 强制重绘
+                    void phone.offsetWidth;
+                    // 应用网格上移
                     appGrid.style.marginTop = '20px';
                     appGrid.style.marginBottom = '50px';
+                    // 内容区底部加大
+                    content.style.paddingBottom = '220px';
                 }
             } else {
                 phone.classList.remove('fullscreen');
@@ -353,48 +300,52 @@
                 phone.style.width = '320px';
                 phone.style.height = '640px';
                 
-                // 退出全屏后恢复默认样式
-                appGrid.style.marginTop = '';
-                appGrid.style.marginBottom = '';
-            }
-        });
-        
-        window.addEventListener('resize', () => {
-            if (isFull) {
-                phone.style.width = '100vw';
-                phone.style.height = '100vh';
-                // resize时重新强制设置
-                if (window.innerWidth > 430 && isEdgeBrowser) {
-                    appGrid.style.marginTop = '20px';
-                    appGrid.style.marginBottom = '50px';
+                // 恢复默认样式
+                if (isEdgeBrowser && isHongmiNote13Pro) {
+                    appGrid.style.marginTop = '';
+                    appGrid.style.marginBottom = '';
+                    content.style.paddingBottom = '';
                 }
             }
         });
         
+        // 窗口变化时重新设置
+        window.addEventListener('resize', () => {
+            if (isFull) {
+                phone.style.width = '100vw';
+                phone.style.height = '100vh';
+                
+                // 重新检测红米Note13 Pro并应用样式
+                const currentIsHongmiNote13Pro = window.innerWidth > 430;
+                if (isEdgeBrowser && currentIsHongmiNote13Pro) {
+                    appGrid.style.marginTop = '20px';
+                    appGrid.style.marginBottom = '50px';
+                    content.style.paddingBottom = '220px';
+                }
+            }
+        });
+        
+        // 方向变化时重新设置
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
                 if (isFull) {
                     phone.style.width = '100vw';
                     phone.style.height = '100vh';
-                    if (window.innerWidth > 430 && isEdgeBrowser) {
+                    
+                    const currentIsHongmiNote13Pro = window.innerWidth > 430;
+                    if (isEdgeBrowser && currentIsHongmiNote13Pro) {
                         appGrid.style.marginTop = '20px';
                         appGrid.style.marginBottom = '50px';
+                        content.style.paddingBottom = '220px';
                     }
                 }
             }, 100);
         });
         
+        // ESC键退出全屏
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && isFull) {
                 fullBtn.click();
-            }
-        });
-
-        // 页面加载时强制检查
-        window.addEventListener('load', () => {
-            if (window.innerWidth > 430 && isEdgeBrowser && isFull) {
-                appGrid.style.marginTop = '20px';
-                appGrid.style.marginBottom = '50px';
             }
         });
     </script>
