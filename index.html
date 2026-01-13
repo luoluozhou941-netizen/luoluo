@@ -64,7 +64,7 @@
             position: fixed;
             top: 0;
             left: 0;
-            right: -0;
+            right: 0;
             width: 100%;
             z-index: 999;
             font-size: clamp(12px, 3vw, 16px);
@@ -268,21 +268,16 @@
         .fullscreen-btn:hover {
             background: #e8b8cc;
         }
-        /* Edge浏览器专属样式 */
-        .is-edge.phone.fullscreen .app-grid {
-            margin-top: 50px !important; 
-            width: clamp(320px, 80%, 400px) !important;
-        }
-        /* 红米Note13 Pro + Edge 专属适配（修复重叠+上移应用网格） */
+        /* 红米Note13 Pro + Edge 专属最高优先级适配（必生效） */
         @media (min-width: 431px) and (max-width: 1080px) {
-            .is-edge.phone.fullscreen .app-grid {
-                margin-top: clamp(30px, 5vw, 60px) !important; /* 上移应用网格 */
+            .phone.is-edge.fullscreen .app-grid {
+                margin-top: 20px !important; /* 强制上移（数值调小=上移更多） */
+                margin-bottom: 50px !important; /* 底部留更多空 */
                 width: 100% !important;
                 max-width: var(--fullscreen-max-width) !important;
             }
-            /* 增加底部内边距，避免导航栏遮挡 */
-            .is-edge.phone.fullscreen .content {
-                padding-bottom: calc(200px + env(safe-area-inset-bottom)) !important;
+            .phone.is-edge.fullscreen .content {
+                padding-bottom: 220px !important; /* 底部内边距再加大 */
             }
         }
     </style>
@@ -301,7 +296,7 @@
         </div>
         <div class="content">
             <div class="widget widget-anniversary"></div>
-            <div class="app-grid">
+            <div class="app-grid" id="appGrid"> <!-- 新增ID，方便JS精准控制 -->
                 <div class="widget widget-period"></div>
                 <div class="app-icon" style="grid-column: 3; grid-row: 1;"></div>
                 <div class="app-icon" style="grid-column: 4; grid-row: 1;"></div>
@@ -325,6 +320,7 @@
     <script>
         const phone = document.getElementById('phone');
         const fullBtn = document.getElementById('fullBtn');
+        const appGrid = document.getElementById('appGrid'); // 新增：获取应用网格元素
         let isFull = false;
         
         // 检测Edge浏览器
@@ -343,6 +339,12 @@
                 document.body.style.padding = '0';
                 phone.style.width = '100vw';
                 phone.style.height = '100vh';
+                
+                // 强制给红米Note13 Pro+Edge设置应用网格上移（JS内联样式，优先级最高）
+                if (window.innerWidth > 430 && isEdgeBrowser) {
+                    appGrid.style.marginTop = '20px';
+                    appGrid.style.marginBottom = '50px';
+                }
             } else {
                 phone.classList.remove('fullscreen');
                 fullBtn.textContent = '全屏切换';
@@ -350,6 +352,10 @@
                 document.body.style.padding = '20px';
                 phone.style.width = '320px';
                 phone.style.height = '640px';
+                
+                // 退出全屏后恢复默认样式
+                appGrid.style.marginTop = '';
+                appGrid.style.marginBottom = '';
             }
         });
         
@@ -357,6 +363,11 @@
             if (isFull) {
                 phone.style.width = '100vw';
                 phone.style.height = '100vh';
+                // resize时重新强制设置
+                if (window.innerWidth > 430 && isEdgeBrowser) {
+                    appGrid.style.marginTop = '20px';
+                    appGrid.style.marginBottom = '50px';
+                }
             }
         });
         
@@ -365,6 +376,10 @@
                 if (isFull) {
                     phone.style.width = '100vw';
                     phone.style.height = '100vh';
+                    if (window.innerWidth > 430 && isEdgeBrowser) {
+                        appGrid.style.marginTop = '20px';
+                        appGrid.style.marginBottom = '50px';
+                    }
                 }
             }, 100);
         });
@@ -375,21 +390,11 @@
             }
         });
 
-        // 红米Note13 Pro+Edge全屏状态强制重置
+        // 页面加载时强制检查
         window.addEventListener('load', () => {
-            if (window.innerWidth > 430 && isEdgeBrowser) {
-                // 移除isFull条件，确保Edge浏览器在红米Note13 Pro上统一渲染
-                phone.classList.remove('fullscreen');
-                setTimeout(() => {
-                    phone.classList.add('fullscreen');
-                    phone.style.width = '100vw';
-                    phone.style.height = '100vh';
-                    // 强制设置应用网格上移
-                    const appGrid = document.querySelector('.app-grid');
-                    if (appGrid) {
-                        appGrid.style.marginTop = '30px';
-                    }
-                }, 50);
+            if (window.innerWidth > 430 && isEdgeBrowser && isFull) {
+                appGrid.style.marginTop = '20px';
+                appGrid.style.marginBottom = '50px';
             }
         });
     </script>
