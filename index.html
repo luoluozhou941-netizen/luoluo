@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>全乎1:1尺寸复刻 - 多机型适配最终版（含XS/XR+Edge强制适配）</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #e6d6df;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+        }
+        :root {
+            --base-unit: 1vw;
+            --fullscreen-max-width: 90vw;
+        }
+        .phone {
+            width: 320px;
+            height: 640px;
+            background-color: #f0e6ed;
+            border-radius: 40px;
+            box-shadow: 
+                0 20px 40px rgba(138, 107, 125, 0.3),
+                0 0 0 12px #f8f5f7,
+                0 0 0 14px #d8c9d2;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            position: relative;
+            border: 2px solid #d8c9d2;
+        }
+        .phone.fullscreen {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            box-shadow: none;
+            border: none;
+            background-color: transparent;
+            margin: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+        }
+        .status-bar {
+            height: 28px;
+            background-color: #f8f5f7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 12px;
+            color: #8a6b7d;
+            border-bottom: 1px solid #e6d6e1;
+            position: relative;
+            z-index: 2;
+        }
+        .phone.fullscreen .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 999;
+            font-size: clamp(12px, 3vw, 16px);
+        }
+        .status-icons {
+            display: flex;
+            gap: 8px;
+        }
+        .content {
+            height: calc(100% - 28px);
+            background: linear-gradient(160deg, #f8e8f0 0%, #e8d8e8 50%, #d8c8e0 100%);
+            overflow-y: auto;
+            padding: 15px 20px 80px;
+        }
+        .phone.fullscreen .content {
+            height: calc(100vh - 28px);
+            position: fixed;
+            top: 28px;
+            left: 0;
+            right: 0;
+            width: 100%;
+            padding: clamp(15px, 3vw, 25px);
+            padding-bottom: calc(140px + env(safe-area-inset-bottom)); /* 再加大底部内边距 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .widget {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid #f8c8dc;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 20px;
+        }
+        .phone.fullscreen .widget {
+            max-width: var(--fullscreen-max-width);
+            margin: 0 auto clamp(15px, 2vw, 25px);
+        }
+        .widget-anniversary {
+            width: 280px;
+            height: 130px;
+            margin-bottom: 15px;
+        }
+        .phone.fullscreen .widget-anniversary {
+            width: 100%;
+            height: clamp(130px, 20vh, 180px);
+        }
+        /* 非全屏参数：完全还原原始结构 */
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 65px);
+            grid-template-rows: repeat(4, 65px);
+            gap: 6.67px;
+            justify-content: center;
+            margin-top: 60px;
+            width: 280px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        /* 全屏基础样式：完全还原原始结构 */
+        .phone.fullscreen .app-grid {
+            width: 100%;
+            max-width: var(--fullscreen-max-width);
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: clamp(6.67px, 2vw, 12px);
+        }
+        /* 媒体查询：按视口顺序排序，兼容iPhone XS/XR */
+        /* 1. 红米Note12谷歌浏览器（视口≤370px） */
+        @media (max-width: 370px) {
+            .phone.fullscreen .app-grid {
+                margin-top: clamp(50px, 3.5vw, 90px);
+            }
+        }
+        /* 2. iPhone XS/XR（视口=375px，两款机型通用适配） */
+        @media (width: 375px) {
+            .phone.fullscreen .app-grid {
+                margin-top: 100px; /* 匹配目标图位置，不重叠导航栏 */
+            }
+        }
+        /* 3. 红米Note12自带浏览器/红米Note12Turbo（371px-380px） */
+        @media (min-width: 371px) and (max-width: 380px) {
+            .phone.fullscreen .app-grid {
+                margin-top: clamp(60px, 4vw, 100px);
+            }
+        }
+        /* 4. iPhone 14 Pro（381px-400px）：精准调整，彻底消除重叠 */
+        @media (min-width: 381px) and (max-width: 400px) {
+            .phone.fullscreen .app-grid {
+                margin-top: clamp(15px, 3vw, 40px) !important; /* 再调小5px，让内容上移 */
+                margin-bottom: 30px !important; /* 新增底部间距，彻底避免与导航栏重叠 */
+            }
+            /* 导航栏再下移，同时限制app-grid最大高度 */
+            .phone.fullscreen .nav-bar {
+                bottom: calc(env(safe-area-inset-bottom) + 20px) !important;
+            }
+            .phone.fullscreen .app-grid {
+                max-height: clamp(300px, 50vh, 400px) !important; /* 限制网格高度，避免下压 */
+            }
+        }
+        /* 5. 华为Mate60（401px-430px） */
+        @media (min-width: 401px) and (max-width: 430px) {
+            .phone.fullscreen .app-grid {
+                margin-top: clamp(70px, 7vw, 110px);
+            }
+        }
+        /* 6. 红米Note13 Pro（>430px） */
+        @media (min-width: 431px) {
+            .phone.fullscreen .app-grid {
+                margin-top: clamp(60px, 8vw, 100px);
+            }
+        }
+        /* 卡片样式：完全还原原始结构 */
+        .widget-period {
+            width: 135px;
+            height: 135px;
+            grid-column: 1 / span 2;
+            grid-row: 1 / span 2;
+            aspect-ratio: 1/1;
+        }
+        .phone.fullscreen .widget-period {
+            width: 100%;
+            height: auto;
+        }
+        .app-icon {
+            width: 65px;
+            height: 65px;
+            background: rgba(216, 163, 187, 0.15);
+            border-radius: 12px;
+            border: 1px solid #f8c8dc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .phone.fullscreen .app-icon {
+            width: 100%;
+            height: 100%;
+            min-width: clamp(65px, 12vw, 80px);
+            min-height: clamp(65px, 12vw, 80px);
+            max-width: clamp(65px, 12vw, 80px);
+            max-height: clamp(65px, 12vw, 80px);
+        }
+        .widget-badge {
+            width: 135px;
+            height: 135px;
+            border-radius: 50%;
+            grid-column: 3 / span 2;
+            grid-row: 3 / span 2;
+            aspect-ratio: 1/1;
+        }
+        .phone.fullscreen .widget-badge {
+            width: 100%;
+            height: auto;
+        }
+        .nav-bar {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 18px;
+            border: 1px solid #f8c8dc;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1;
+        }
+        .phone.fullscreen .nav-bar {
+            position: fixed;
+            bottom: clamp(10px, 1.2vw, 20px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: clamp(280px, var(--fullscreen-max-width), 600px);
+            height: clamp(70px, 9vw, 90px);
+        }
+        .nav-item {
+            width: 60px;
+            height: 60px;
+            background: rgba(216, 163, 187, 0.1);
+            border-radius: 16px;
+            border: 1px solid #f8c8dc;
+        }
+        .phone.fullscreen .nav-item {
+            width: clamp(60px, 8vw, 75px);
+            height: clamp(60px, 8vw, 75px);
+        }
+        .fullscreen-btn {
+            position: absolute;
+            top: 40px;
+            right: 20px;
+            padding: 5px 10px;
+            background: #f8c8dc;
+            color: #fff;
+            border: none;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 10;
+            transition: background 0.3s;
+        }
+        .fullscreen-btn:hover {
+            background: #e8b8cc;
+        }
+        /* Edge浏览器专属样式（默认隐藏，通过JS激活） */
+        .is-edge.phone.fullscreen .app-grid {
+            margin-top: 50px !important; 
+            width: clamp(320px, 80%, 400px) !important;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="phone" id="phone">
+        <button class="fullscreen-btn" id="fullBtn">全屏切换</button>
+        <div class="status-bar">
+            <span>13:20</span>
+            <div class="status-icons">
+                <i class="fas fa-signal"></i>
+                <i class="fas fa-wifi"></i>
+                <i class="fas fa-battery-three-quarters"></i>
+            </div>
+        </div>
+        <div class="content">
+            <div class="widget widget-anniversary"></div>
+            <div class="app-grid">
+                <div class="widget widget-period"></div>
+                <div class="app-icon" style="grid-column: 3; grid-row: 1;"></div>
+                <div class="app-icon" style="grid-column: 4; grid-row: 1;"></div>
+                <div class="app-icon" style="grid-column: 3; grid-row: 2;"></div>
+                <div class="app-icon" style="grid-column: 4; grid-row: 2;"></div>
+                <div class="app-icon" style="grid-column: 1; grid-row: 3;"></div>
+                <div class="app-icon" style="grid-column: 2; grid-row: 3;"></div>
+                <div class="app-icon" style="grid-column: 1; grid-row: 4;"></div>
+                <div class="app-icon" style="grid-column: 2; grid-row: 4;"></div>
+                <div class="widget widget-badge"></div>
+            </div>
+        </div>
+        <div class="nav-bar">
+            <div class="nav-item"></div>
+            <div class="nav-item"></div>
+            <div class="nav-item"></div>
+            <div class="nav-item"></div>
+            <div class="nav-item"></div>
+        </div>
+    </div>
+    <script>
+        const phone = document.getElementById('phone');
+        const fullBtn = document.getElementById('fullBtn');
+        let isFull = false;
+        
+        // 关键：检测Edge浏览器，添加专属类名
+        const isEdgeBrowser = /Edg\/|Microsoft Edge/i.test(navigator.userAgent);
+        if (isEdgeBrowser) {
+            phone.classList.add('is-edge');
+        }
+        
+        fullBtn.addEventListener('click', () => {
+            isFull = !isFull;
+            
+            if (isFull) {
+                phone.classList.add('fullscreen');
+                fullBtn.textContent = '退出全屏';
+                document.body.style.overflow = 'hidden';
+                document.body.style.padding = '0';
+                phone.style.width = '100vw';
+                phone.style.height = '100vh';
+            } else {
+                phone.classList.remove('fullscreen');
+                fullBtn.textContent = '全屏切换';
+                document.body.style.overflow = 'auto';
+                document.body.style.padding = '20px';
+                phone.style.width = '320px';
+                phone.style.height = '640px';
+            }
+        });
+        
+        window.addEventListener('resize', () => {
+            if (isFull) {
+                phone.style.width = '100vw';
+                phone.style.height = '100vh';
+            }
+        });
+        
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                if (isFull) {
+                    phone.style.width = '100vw';
+                    phone.style.height = '100vh';
+                }
+            }, 100);
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isFull) {
+                fullBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
