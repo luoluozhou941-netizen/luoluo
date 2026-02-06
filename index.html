@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Blush Mist · 粉雾手机 - 无边框应用</title>
+    <title>Blush Mist · 嘟嘟小手机</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -36,19 +36,15 @@
             --primary-blue: #7aa9c6;
             --primary-deep: #8a6b7d;
             --bg-light: #f8f5f7;
-            --bg-lighter: #fff5fa;
             --bg-content: #ffffff;
             --text-dark: #5a4a52;
             --text-medium: #8a6b7d;
             --text-light: #b8a6b1;
             --border-color: #e6d6e1;
             --shadow-light: rgba(138, 107, 125, 0.1);
-            --shadow-medium: rgba(138, 107, 125, 0.2);
             --shadow-strong: rgba(138, 107, 125, 0.3);
             --period-red: #e8a3bb;
-            --period-bg: rgba(232, 163, 187, 0.15);
-            --ovulation-purple: #9a8bbd;
-            --safe-blue: #7aa9c6;
+            --screen-gradient: linear-gradient(160deg, #f8e8f0 0%, #e8d8e8 50%, #d8c8e0 100%);
         }
         
         .phone-container {
@@ -73,7 +69,6 @@
                 0 0 0 14px #c8b9c2;
         }
 
-        /* 全屏模式 - 等比例缩放 */
         .phone-container.fullscreen {
             width: 320px;
             height: 640px;
@@ -94,17 +89,13 @@
             display: none;
         }
         
-        .phone-container.fullscreen .status-bar {
-            /* 跟随整体缩放，不需要特殊处理 */
-        }
-        
         .phone-container.fullscreen .screen {
-            height: calc(100% - 28px);
+            height: 100%
         }
         
         .status-bar {
             height: 28px;
-            background-color: var(--bg-light);
+            background: transparent;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -112,23 +103,29 @@
             font-size: 12px;
             font-weight: bold;
             color: var(--text-medium);
-            border-bottom: 1px solid var(--border-color);
-            position: relative;
-            z-index: 2;
+            position: absolute; /* 改为绝对定位 */
+            top: 0; /* 固定在顶部 */
+            left: 0; /* 左侧对齐 */
+            right: 0; /* 右侧对齐 */
+            z-index: 10; /* 提高层级，确保在最上层 */
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        .status-bar .time:hover {
-            color: var(--primary-pink);
-            transition: color 0.2s ease;
+
+        .status-bar.hidden {
+            background: transparent;
+        }
+
+        .status-bar.hidden .time,
+        .status-bar.hidden .status-icons {
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         
         .time {
             font-weight: bold;
             color: var(--primary-deep);
-            transition: color 0.2s ease;
+            transition: color 0.2s ease, opacity 0.3s ease;
         }
         
         .status-icons i {
@@ -137,13 +134,12 @@
         }
         
         .screen {
-            height: calc(100% - 28px);
-            background: linear-gradient(160deg, #f8e8f0 0%, #e8d8e8 50%, #d8c8e0 100%);
+            height: 100%; /* 改为100%充满整个手机 */
+            background: var(--screen-gradient);
             overflow-y: auto;
             position: relative;
-            -webkit-overflow-scrolling: touch;
-            -ms-overflow-style: none;
             scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
         }
         
         .screen::-webkit-scrollbar {
@@ -152,22 +148,22 @@
         
         .home-screen {
             min-height: 100%;
-            padding: 15px 20px 80px;
+            padding: 43px 20px 80px; /* 顶部从15px增加到43px (28px状态栏高度 + 15px原内边距) */
             display: flex;
             flex-direction: column;
-            transition: opacity 0.3s ease;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            background: var(--screen-gradient);
         }
         
-        .home-screen::-webkit-scrollbar {
-            display: none;
+        .home-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
         
-        /* 设置页面样式 */
-        .settings-screen {
+        .settings-screen,
+        .api-settings-screen {
             min-height: 100%;
-            padding: 15px 20px 80px;
+            padding: 43px 20px 80px; /* 顶部从15px增加到43px (28px状态栏高度 + 15px原内边距) */
             display: flex;
             flex-direction: column;
             opacity: 0;
@@ -177,20 +173,15 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(160deg, #f8e8f0 0%, #e8d8e8 50%, #d8c8e0 100%);
+            background: var(--screen-gradient);
             transform: translateX(100%);
             transition: transform 0.3s ease, opacity 0.3s ease;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+            z-index: 5;
         }
-        
-        .settings-screen::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .settings-screen.active {
+
+        .settings-screen.active,
+        .api-settings-screen.active {
             opacity: 1;
             pointer-events: auto;
             transform: translateX(0);
@@ -215,8 +206,6 @@
             cursor: pointer;
             margin-right: 15px;
             box-shadow: 0 2px 8px rgba(138, 107, 125, 0.1);
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
         }
         
         .back-button i {
@@ -233,7 +222,6 @@
         .settings-section {
             background-color: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             border-radius: 18px;
             padding: 20px;
             margin-bottom: 20px;
@@ -260,13 +248,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 0;
+            padding: 16px 10px;
             border-bottom: 1px solid rgba(232, 163, 187, 0.1);
             cursor: pointer;
             transition: background-color 0.2s ease;
             border-radius: 8px;
-            padding-left: 10px;
-            padding-right: 10px;
         }
         
         .settings-item:last-child {
@@ -365,359 +351,16 @@
             transform: translateX(24px);
         }
         
-        .value-text {
-            font-size: 14px;
-            color: var(--text-medium);
-            font-weight: 500;
-        }
-        
         .arrow-icon {
             color: var(--text-light);
             font-size: 14px;
         }
         
-        .grid-unit {
-            width: 65px;
-            height: 65px;
-        }
-        
-        .content-area {
-            width: 280px;
-            margin: 0 auto;
-        }
-        
-        .widget-large {
-            width: 280px;
-            height: 130px;
-            margin-bottom: 15px;
-        }
-        
-        .app-icon-borderless {
-            width: 65px;
-            height: 65px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-dark);
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            text-align: center;
-            cursor: pointer;
-            padding: 5px 0;
-            position: relative;
-            border-radius: 12px;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        
-        .app-icon-borderless i {
-            font-size: 22px;
-            margin-bottom: 4px;
-            color: var(--primary-pink);
-            transition: all 0.3s ease;
-        }
-        
-        .app-icon-borderless span {
-            font-size: 11px;
-            font-weight: 500;
-            line-height: 1.1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-            padding: 0 2px;
-            max-width: 58px;
-            color: var(--text-dark);
-            transition: color 0.3s ease;
-        }
-        
-        .app-icon-borderless:hover {
-            background-color: rgba(216, 163, 187, 0.15);
-            transform: translateY(-3px) scale(1.05);
-        }
-        
-        .app-icon-borderless:hover i {
-            transform: scale(1.1);
-            color: var(--period-red);
-        }
-        
-        .app-icon-borderless:hover span {
-            color: var(--primary-deep);
-        }
-        
-        .app-icon-borderless.active {
-            background-color: rgba(216, 163, 187, 0.2);
-        }
-        
-        .app-icon-borderless.active i {
-            color: var(--period-red);
-            transform: scale(1.05);
-        }
-        
-        .app-icon-borderless:active {
-            transform: scale(0.95);
-        }
-        
-        .app-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 65px);
-            grid-template-rows: repeat(4, 65px);
-            gap: 6.67px;
-            justify-content: center;
-            margin-top: 60px;
-        }
-        
-        .anniversary-widget {
-            background-color: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 
-                0 4px 12px var(--shadow-light),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.6);
-            padding: 12px;
-            border: 1.5px solid rgba(255, 255, 255, 0.8);
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        
-        .card-name {
-            font-size: 15px;
-            color: var(--text-dark);
-            font-weight: 500;
-        }
-        
-        .card-tag {
-            font-size: 10px;
-            color: #FFFFFF;
-            background-color: var(--primary-pink);
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-weight: 500;
-        }
-        
-        .countdown {
-            display: flex;
-            gap: 6px;
-            justify-content: center;
-            margin-bottom: 6px;
-        }
-        
-        .countdown-item {
-            text-align: center;
-        }
-        
-        .countdown-num {
-            width: 32px;
-            height: 32px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 8px;
-            line-height: 32px;
-            font-size: 13px;
-            color: var(--primary-deep);
-            font-weight: bold;
-            margin-bottom: 3px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 4px rgba(138, 107, 125, 0.1);
-        }
-        
-        .countdown-text {
-            font-size: 8px;
+        .brand-text {
             color: var(--text-medium);
-        }
-        
-        .card-info {
-            text-align: center;
-            font-size: 10px;
-            color: var(--text-medium);
-            margin-top: 4px;
-        }
-        
-        .period-square-widget {
-            width: 135px;
-            height: 135px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 20px;
-            border: 1.5px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 
-                0 4px 12px rgba(138, 107, 125, 0.15),
-                inset 0 0 0 1px rgba(232, 163, 187, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 12px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
-            position: relative;
-            overflow: hidden;
-            transform-origin: center center;
-            grid-column: 1 / span 2;
-            grid-row: 1 / span 2;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        
-        .period-square-widget::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(232, 163, 187, 0.08) 0%, 
-                rgba(232, 163, 187, 0.04) 50%, 
-                rgba(255, 255, 255, 0) 100%);
-            z-index: -1;
-        }
-        
-        .period-square-widget:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 
-                0 8px 24px rgba(138, 107, 125, 0.2),
-                inset 0 0 0 1px rgba(232, 163, 187, 0.2);
-            border-color: rgba(232, 163, 187, 0.3);
-        }
-        
-        .period-square-widget.active {
-            background: rgba(232, 163, 187, 0.12);
-        }
-        
-        .kyocera-droplet-icon {
-            font-size: 32px;
-            color: var(--period-red);
-            filter: drop-shadow(0 2px 3px rgba(232, 163, 187, 0.4));
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 40px;
-        }
-        
-        .period-status-area-square {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 6px;
-            width: 100%;
-        }
-        
-        .period-status-correct {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 2px;
-            text-align: center;
-            line-height: 1.2;
-        }
-        
-        .period-day-correct {
             font-size: 12px;
-            color: var(--text-medium);
-            font-weight: 500;
+            margin-top: 5px;
             text-align: center;
-            line-height: 1.2;
-        }
-        
-        .period-info-area-square {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            gap: 4px;
-        }
-        
-        .period-next-correct {
-            font-size: 11px;
-            color: var(--text-medium);
-            text-align: center;
-            line-height: 1.2;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-        }
-        
-        .period-countdown-correct {
-            font-size: 10px;
-            color: #FFFFFF;
-            font-weight: 600;
-            background: var(--primary-pink);
-            padding: 3px 8px;
-            border-radius: 8px;
-            border: 1px solid rgba(216, 163, 187, 0.2);
-            text-align: center;
-            line-height: 1.2;
-            white-space: nowrap;
-            box-shadow: 0 2px 4px rgba(216, 163, 187, 0.2);
-        }
-        
-        .badge-widget-large {
-            width: 135px;
-            height: 135px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #f5f5f5 25%, #e0e0e0 100%);
-            background-image: url('https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=300&h=300&fit=crop');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            box-shadow: 
-                0 6px 12px rgba(138, 107, 125, 0.15),
-                inset 0 0 0 2px rgba(138, 107, 125, 0.1),
-                inset 0 -12px 30px rgba(255, 255, 255, 0.1),
-                inset 0 12px 30px rgba(255, 255, 255, 0.95),
-                inset 0 20px 40px rgba(255, 255, 255, 0.8),
-                inset 0 -20px 40px rgba(138, 107, 125, 0.2);
-            cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            transform: perspective(1000px) rotateX(8deg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            grid-column: 3 / span 2;
-            grid-row: 3 / span 2;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        
-        .badge-widget-large::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: radial-gradient(circle at 50% 40%, transparent 40%, rgba(255, 255, 255, 0.2) 80%, rgba(255, 255, 255, 0.1) 100%);
-            pointer-events: none;
-            z-index: 1;
-        }
-        
-        .badge-widget-large:hover {
-            transform: perspective(1000px) rotateX(8deg) scale(1.1) rotate(2deg);
-            box-shadow: 
-                0 8px 16px rgba(138, 107, 125, 0.2),
-                inset 0 0 0 2px rgba(138, 107, 125, 0.12),
-                inset 0 -15px 35px rgba(255, 255, 255, 0.15),
-                inset 0 15px 35px rgba(255, 255, 255, 0.98),
-                inset 0 25px 45px rgba(255, 255, 255, 0.85),
-                inset 0 -25px 45px rgba(138, 107, 125, 0.25);
         }
         
         .ink-navbar {
@@ -728,7 +371,6 @@
             height: 70px;
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
             border-radius: 18px;
             display: flex;
             justify-content: space-around;
@@ -747,7 +389,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 60px;
+            width: 80px;
             height: 60px;
             border-radius: 16px;
             cursor: pointer;
@@ -755,12 +397,10 @@
             position: relative;
             background-color: transparent;
             border: none;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
         }
         
         .nav-icon i {
-            font-size: 20px;
+            font-size: 24px;
             color: var(--primary-deep);
             transition: all 0.3s ease;
         }
@@ -775,7 +415,6 @@
         }
         
         .nav-item.active .nav-icon i {
-            transform: scale(1.05);
             color: var(--primary-pink);
         }
         
@@ -784,10 +423,10 @@
         }
         
         .nav-name {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--text-medium);
-            margin-top: 4px;
+            margin-top: 6px;
             line-height: 1.1;
             text-align: center;
             max-width: 100%;
@@ -877,7 +516,6 @@
             height: 50px;
             background-color: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             border-radius: 25px;
             display: flex;
             justify-content: center;
@@ -888,8 +526,7 @@
             color: var(--text-dark);
             transition: transform 0.3s;
             box-shadow: 0 4px 12px rgba(138, 107, 125, 0.1);
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+            user-select: none;
         }
         
         .unlock-slider i {
@@ -935,7 +572,6 @@
             height: 55px;
             background-color: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             border-radius: 50%;
             bottom: 15px;
             left: 50%;
@@ -948,57 +584,604 @@
             border: 1.5px solid rgba(255, 255, 255, 0.8);
             z-index: 2;
             box-shadow: 0 4px 12px rgba(138, 107, 125, 0.15);
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
         }
         
         .home-button i {
             color: var(--primary-pink);
         }
         
-        .badge-upload {
-            display: none;
+        .config-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
-        
-        .uploading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+
+        .config-item {
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 14px 16px;
+            border: 1.5px solid rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .config-item:hover {
+            background-color: rgba(255, 255, 255, 0.85);
+            border-color: rgba(216, 163, 187, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .config-item.active {
+            background-color: rgba(216, 163, 187, 0.15);
+            border-color: rgba(216, 163, 187, 0.4);
+        }
+
+        .config-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .config-name {
+            font-size: 14px;
+            font-weight: 600;
             color: var(--text-dark);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .config-details {
+            font-size: 11px;
+            color: var(--text-medium);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .config-model {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .config-model i {
+            font-size: 10px;
+            color: var(--primary-pink);
+        }
+
+        .config-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .config-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(216, 163, 187, 0.2);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .config-btn:hover {
+            background-color: rgba(216, 163, 187, 0.15);
+            transform: scale(1.1);
+        }
+
+        .config-btn i {
             font-size: 12px;
-            font-weight: bold;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 4px 10px;
-            border-radius: 10px;
-            z-index: 3;
+            color: var(--primary-pink);
+        }
+
+        .add-config-btn {
+            background-color: rgba(216, 163, 187, 0.15);
+            border: 1.5px solid rgba(216, 163, 187, 0.3);
+            color: var(--primary-pink);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: auto;
+        }
+
+        .add-config-btn:hover {
+            background-color: rgba(216, 163, 187, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .api-config-form {
+            margin-bottom: 20px;
+        }
+
+        .api-config-form.hidden {
             display: none;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+
+        .form-label i {
+            color: var(--primary-pink);
+        }
+
+        .temp-value {
+            margin-left: auto;
+            font-size: 14px;
+            color: var(--primary-pink);
+            font-weight: bold;
+            background-color: rgba(216, 163, 187, 0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1.5px solid rgba(216, 163, 187, 0.3);
+            background-color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-pink);
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 0 3px rgba(216, 163, 187, 0.15);
+        }
+
+        .form-hint {
+            font-size: 11px;
+            color: var(--text-medium);
+            margin-top: 6px;
+            opacity: 0.8;
+        }
+
+        .form-error {
+            font-size: 11px;
+            color: #e74c3c;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .form-input.error {
+            border-color: #e74c3c;
+        }
+
+        .form-input.error + .form-error {
+            display: block;
+        }
+
+        .password-input {
+            position: relative;
+        }
+
+        .password-input .form-input {
+            padding-right: 45px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-medium);
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .toggle-password:hover {
+            background-color: rgba(216, 163, 187, 0.1);
+        }
+
+        .form-range {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(to right, 
+                var(--primary-blue) 0%, 
+                var(--primary-pink) 50%, 
+                var(--period-red) 100%);
+            border-radius: 3px;
+            outline: none;
+            margin: 12px 0;
+        }
+
+        .form-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--bg-content);
+            border: 2px solid var(--primary-pink);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(138, 107, 125, 0.2);
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-medium);
+            margin-top: 4px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1.5px solid;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-pink);
+            border-color: var(--primary-pink);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: rgba(216, 163, 187, 0.9);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-color: rgba(216, 163, 187, 0.3);
+            color: var(--text-dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(216, 163, 187, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .model-select-container {
+            position: relative;
+        }
+
+        .model-fetch-btn {
+            background-color: rgba(216, 163, 187, 0.15);
+            border: 1.5px solid rgba(216, 163, 187, 0.3);
+            color: var(--primary-pink);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .model-fetch-btn:hover:not(:disabled) {
+            background-color: rgba(216, 163, 187, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .model-fetch-btn:disabled {
+            background-color: #eee;
+            border-color: #ddd;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .model-fetch-btn.loading {
+            pointer-events: none;
+        }
+
+        .model-fetch-btn.loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .model-status {
+            font-size: 11px;
+            margin-top: 6px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .model-status.success {
+            display: block;
+            background-color: rgba(122, 169, 198, 0.15);
+            color: var(--primary-blue);
+            border: 1px solid rgba(122, 169, 198, 0.3);
+        }
+
+        .model-status.error {
+            display: block;
+            background-color: rgba(232, 163, 187, 0.15);
+            color: #e74c3c;
+            border: 1px solid rgba(232, 163, 187, 0.3);
+        }
+
+        .model-status.loading {
+            display: block;
+            background-color: rgba(216, 163, 187, 0.1);
+            color: var(--text-medium);
+            border: 1px solid rgba(216, 163, 187, 0.2);
+        }
+
+        .form-select:disabled {
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .custom-model-input {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .custom-model-input.visible {
+            display: block;
         }
         
-        .brand-text {
+        .error-visible {
+            display: block !important;
+        }
+        
+        .unlock-slider.dragging {
+            transition: none;
+        }
+        
+        /* 空桌面样式 */
+        .empty-desktop {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-medium);
+            opacity: 0.7;
+        }
+        
+        .empty-desktop i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: var(--primary-pink);
+            opacity: 0.5;
+        }
+        
+        .empty-desktop p {
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.5;
+            max-width: 200px;
+        }
+
+        /* API设置列表区域 */
+        .api-list-section {
+            display: block;
+        }
+
+        .api-list-section.hidden {
+            display: none;
+        }
+        
+        .api-form-section {
+            display: none;
+        }
+
+        .api-form-section.active {
+            display: block;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-medium);
+        }
+        
+        .empty-state i {
+            font-size: 40px;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        /* 模型分组样式 */
+        .model-group {
+            margin-bottom: 15px;
+        }
+
+        .model-group-header {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary-deep);
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(216, 163, 187, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .model-group-header i {
+            font-size: 10px;
+            color: var(--primary-pink);
+        }
+
+        .model-option-group {
+            padding-left: 10px;
+        }
+
+        .model-option {
+            padding: 8px 10px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border-radius: 6px;
+            margin-bottom: 4px;
+        }
+
+        .model-option:hover {
+            background-color: rgba(216, 163, 187, 0.1);
+        }
+
+        .model-option.selected {
+            background-color: rgba(216, 163, 187, 0.15);
+            color: var(--primary-pink);
+            font-weight: 500;
+        }
+
+        /* 占位文本样式 */
+        .form-input::placeholder {
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        /* 引导文本样式 */
+        .form-input.guide-text {
+            color: var(--text-light);
+            font-style: italic;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-input.guide-text:focus {
+            color: var(--text-dark);
+            font-style: normal;
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+
+        /* 模型选择框样式 */
+        .form-select.model-grouped {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .form-select.model-grouped option {
+            padding: 8px 12px;
+        }
+
+        .form-select.model-grouped optgroup {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary-deep);
+            padding: 8px 0;
+        }
+
+        .form-select.model-grouped optgroup option {
+            padding-left: 20px;
+            font-size: 13px;
+            color: var(--text-dark);
+        }
+
+        /* 模型分类容器 */
+        .model-groups-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1.5px solid rgba(216, 163, 187, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            margin-top: 8px;
+            display: none;
+        }
+
+        .model-groups-container.visible {
+            display: block;
+        }
+
+        .model-groups-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .model-groups-container::-webkit-scrollbar-track {
+            background: rgba(216, 163, 187, 0.1);
+            border-radius: 3px;
+        }
+
+        .model-groups-container::-webkit-scrollbar-thumb {
+            background: rgba(216, 163, 187, 0.3);
+            border-radius: 3px;
+        }
+
+        .model-groups-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(216, 163, 187, 0.5);
+        }
+
+        .model-search-container {
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .model-search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(216, 163, 187, 0.2);
+            font-size: 12px;
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+
+        .model-search-input:focus {
+            outline: none;
+            border-color: var(--primary-pink);
+        }
+
+        .no-models-message {
+            text-align: center;
+            padding: 20px;
             color: var(--text-medium);
             font-size: 12px;
-            margin-top: 5px;
-        }
-        
-        /* AO3专属图标样式 */
-        .ao3-icon {
-            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        /* 黑箱专属图标样式 */
-        .blackbox-icon {
-            color: #5a4a52;
         }
     </style>
 </head>
 <body>
+    
     <div class="phone-container" id="phoneContainer">
         <div class="notch">
             <div class="notch-camera"></div>
@@ -1016,7 +1199,7 @@
                     <i class="fas fa-chevron-up"></i>
                     <span>滑动解锁</span>
                 </div>
-                <div class="brand-text">Blush Mist · 粉雾手机</div>
+                <div class="brand-text">Blush Mist · 嘟嘟小手机</div>
             </div>
         </div>
         
@@ -1029,96 +1212,13 @@
             </div>
         </div>
         
-        <div class="screen">
-            <!-- 主页 -->
+        <div class="screen" id="main-content">
             <div class="home-screen" id="homeScreen">
-                <div class="widget-large anniversary-widget" id="anniversary-widget">
-                    <div class="card-header">
-                        <div class="card-name" id="name">纪念日</div>
-                        <div class="card-tag" id="tag">倒数日</div>
-                    </div>
-                    <div class="countdown">
-                        <div class="countdown-item">
-                            <div class="countdown-num" id="d">161</div>
-                            <div class="countdown-text">天</div>
-                        </div>
-                        <div class="countdown-item">
-                            <div class="countdown-num" id="h">18</div>
-                            <div class="countdown-text">时</div>
-                        </div>
-                        <div class="countdown-item">
-                            <div class="countdown-num" id="m">39</div>
-                            <div class="countdown-text">分</div>
-                        </div>
-                        <div class="countdown-item">
-                            <div class="countdown-num" id="s">59</div>
-                            <div class="countdown-text">秒</div>
-                        </div>
-                    </div>
-                    <div class="card-info" id="date">目标日期: 2026-06-18</div>
+                <!-- 空桌面 -->
+                <div class="empty-desktop">
+                    <i class="fas fa-mobile-alt"></i>
+                    <p>桌面空空如也<br>从底部导航栏访问功能</p>
                 </div>
-                
-                <div class="app-grid">
-                    <!-- 左上：经期助手2×2方形小组件 -->
-                    <div class="period-square-widget" id="period-square-widget">
-                        <div class="kyocera-droplet-icon">
-                            <i class="fas fa-tint"></i>
-                        </div>
-                        
-                        <div class="period-status-area-square">
-                            <div class="period-status-correct" id="period-status">经期中</div>
-                            <div class="period-day-correct" id="period-day">第3天</div>
-                        </div>
-                        
-                        <div class="period-info-area-square">
-                            <div class="period-next-correct" id="period-next">下次: 9月28日</div>
-                            <div class="period-countdown-correct" id="period-countdown">还有14天</div>
-                        </div>
-                    </div>
-                    
-                    <!-- 右上：4个APP图标 -->
-                    <div class="app-icon-borderless" data-app="calendar" style="grid-column: 3; grid-row: 1;">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>日历</span>
-                    </div>
-                    <div class="app-icon-borderless" data-app="health" style="grid-column: 4; grid-row: 1;">
-                        <i class="fas fa-heartbeat"></i>
-                        <span>健康</span>
-                    </div>
-                    <div class="app-icon-borderless" data-app="ao3" style="grid-column: 3; grid-row: 2;">
-                        <i class="fas fa-book-open ao3-icon"></i>
-                        <span>AO3</span>
-                    </div>
-                    <div class="app-icon-borderless" data-app="music" style="grid-column: 4; grid-row: 2;">
-                        <i class="fas fa-music"></i>
-                        <span>音乐</span>
-                    </div>
-                    
-                    <!-- 左下：4个APP图标 -->
-                    <div class="app-icon-borderless" data-app="worldbook" style="grid-column: 1; grid-row: 3;">
-                        <i class="fas fa-globe-americas"></i>
-                        <span>世界书</span>
-                    </div>
-                    <div class="app-icon-borderless" data-app="blackbox" style="grid-column: 2; grid-row: 3;">
-                        <i class="fas fa-cube blackbox-icon"></i>
-                        <span>黑箱</span>
-                    </div>
-                    <div class="app-icon-borderless" data-app="starselect" style="grid-column: 1; grid-row: 4;">
-                        <i class="fas fa-star"></i>
-                        <span>星选</span>
-                    </div>
-                    <div class="app-icon-borderless" data-app="timelog" style="grid-column: 2; grid-row: 4;">
-                        <i class="fas fa-clock"></i>
-                        <span>时录</span>
-                    </div>
-                    
-                    <!-- 右下角：2×2圆形吧唧小组件 -->
-                    <div class="badge-widget-large" id="badge-large-widget">
-                        <div class="uploading" id="badgeUploading">上传中...</div>
-                    </div>
-                </div>
-                
-                <input type="file" class="badge-upload" id="badgeUploadInput" accept="image/*">
             </div>
             
             <!-- 设置页面 -->
@@ -1130,64 +1230,10 @@
                     <div class="settings-title">设置</div>
                 </div>
                 
-                <!-- 账户与同步 -->
                 <div class="settings-section">
                     <div class="section-title">
-                        <i class="fas fa-user-circle"></i>
-                        账户与同步
-                    </div>
-                    <div class="settings-item" id="accountSetting">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">账户管理</div>
-                                <div class="item-desc">登录、注销和管理账户</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="syncSetting">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-sync-alt"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">数据同步</div>
-                                <div class="item-desc">自动同步应用数据</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <label class="switch">
-                                <input type="checkbox" id="syncToggle" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="privacySetting">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">隐私保护</div>
-                                <div class="item-desc">管理个人数据隐私</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 网络与连接 -->
-                <div class="settings-section">
-                    <div class="section-title">
-                        <i class="fas fa-wifi"></i>
-                        网络与连接
+                        <i class="fas fa-code"></i>
+                        API设置
                     </div>
                     <div class="settings-item" id="apiSetting">
                         <div class="item-content">
@@ -1195,78 +1241,8 @@
                                 <i class="fas fa-code"></i>
                             </div>
                             <div class="item-text">
-                                <div class="item-name">API 网络设置</div>
-                                <div class="item-desc">配置API接口和网络连接</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="asrSetting">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-microphone-alt"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">ASR 服务</div>
-                                <div class="item-desc">自动语音识别API配置</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="ttsSetting">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-volume-up"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">TTS 服务</div>
-                                <div class="item-desc">文本转语音API配置</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="owmSetting">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-cloud-sun"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">OWM 天气服务</div>
-                                <div class="item-desc">OpenWeatherMap API配置</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="mtSetting">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-language"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">MT 翻译服务</div>
-                                <div class="item-desc">机器翻译API配置</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="pushSetting">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-bell"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">PUSH 推送服务</div>
-                                <div class="item-desc">推送通知API配置</div>
+                                <div class="item-name">API配置</div>
+                                <div class="item-desc">管理API密钥和模型</div>
                             </div>
                         </div>
                         <div class="item-control">
@@ -1275,155 +1251,163 @@
                     </div>
                 </div>
                 
-                <!-- 显示与主题 -->
                 <div class="settings-section">
                     <div class="section-title">
-                        <i class="fas fa-palette"></i>
-                        显示与主题
+                        <i class="fas fa-eye-slash"></i>
+                        显示设置
                     </div>
-                    <div class="settings-item" id="darkModeSetting">
+                    
+                    <div class="settings-item">
                         <div class="item-content">
                             <div class="item-icon">
-                                <i class="fas fa-moon"></i>
+                                <i class="fas fa-eye-slash"></i>
                             </div>
                             <div class="item-text">
-                                <div class="item-name">深色模式</div>
-                                <div class="item-desc">根据时间自动切换</div>
+                                <div class="item-name">隐藏状态栏</div>
+                                <div class="item-desc">隐藏顶部状态栏内容，获得全面屏体验</div>
                             </div>
                         </div>
                         <div class="item-control">
                             <label class="switch">
-                                <input type="checkbox" id="darkModeToggle">
+                                <input type="checkbox" id="hideStatusBarToggle">
                                 <span class="slider"></span>
                             </label>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="themeSetting">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-brush"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">主题颜色</div>
-                                <div class="item-desc">自定义界面主色调</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <span class="value-text">粉雾主题</span>
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="wallpaperSetting">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-image"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">壁纸</div>
-                                <div class="item-desc">设置锁屏和桌面壁纸</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="fontSetting">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-font"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">字体</div>
-                                <div class="item-desc">系统字体大小和样式</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <span class="value-text">默认字体</span>
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 关于本机 -->
-                <div class="settings-section">
-                    <div class="section-title">
-                        <i class="fas fa-mobile-alt"></i>
-                        关于本机
-                    </div>
-                    <div class="settings-item" id="deviceInfo">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-info-circle"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">设备信息</div>
-                                <div class="item-desc">Blush Mist · 粉雾手机</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="softwareUpdate">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-download"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">软件更新</div>
-                                <div class="item-desc">Blush OS 3.2.1 · 最新版本</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="storageInfo">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-hdd"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">存储空间</div>
-                                <div class="item-desc">已用64GB / 总128GB</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <i class="fas fa-chevron-right arrow-icon"></i>
-                        </div>
-                    </div>
-                    <div class="settings-item" id="legalInfo">
-                        <div class="item-content">
-                            <div class="item-icon">
-                                <i class="fas fa-gavel"></i>
-                            </div>
-                            <div class="item-text">
-                                <div class="item-name">法律信息</div>
-                                <div class="item-desc">许可证和条款</div>
-                            </div>
-                        </div>
-                        <div class="item-control">
-                            <i class="fas fa-chevron-right arrow-icon"></i>
                         </div>
                     </div>
                 </div>
             </div>
             
+            <!-- API设置页面 -->
+            <div class="api-settings-screen" id="apiSettingsScreen">
+                <div class="settings-header">
+                    <div class="back-button" id="apiBackButton">
+                        <i class="fas fa-chevron-left"></i>
+                    </div>
+                    <div class="settings-title">API设置</div>
+                </div>
+                
+                <!-- API列表区域 -->
+                <div class="settings-section api-list-section" id="apiListSection">
+                    <div class="section-title">
+                        <i class="fas fa-save"></i>
+                        已保存的配置
+                        <button class="add-config-btn" id="addNewConfig">
+                            <i class="fas fa-plus"></i> 添加配置
+                        </button>
+                    </div>
+                    
+                    <div class="config-list" id="configList">
+                        <!-- 配置列表将通过JS动态生成 -->
+                    </div>
+                </div>
+                
+                <!-- API配置表单区域 -->
+                <div class="settings-section api-form-section" id="apiConfigForm">
+                    <div class="section-title">
+                        <i class="fas fa-sliders-h"></i>
+                        API配置
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="configName">
+                            <i class="fas fa-tag"></i>
+                            配置名称
+                        </label>
+                        <input type="text" class="form-input" id="configName" 
+                               placeholder="例如：DeepSeek默认配置" 
+                               maxlength="30">
+                        <div class="form-hint" id="configNameHint">最多30个字符</div>
+                        <div class="form-error" id="configNameError">请填写配置名称</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="apiUrl">
+                            <i class="fas fa-link"></i>
+                            API Base URL
+                        </label>
+                        <input type="url" class="form-input guide-text" id="apiUrl" 
+                               placeholder="例如：https://api.deepseek.com"
+                               value="">
+                        <div class="form-hint" id="apiUrlHint">API的基础地址（不含/v1/chat/completions）</div>
+                        <div class="form-error" id="apiUrlError">请输入有效的API URL</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="apiKey">
+                            <i class="fas fa-key"></i>
+                            API密钥
+                        </label>
+                        <div class="password-input">
+                            <input type="password" class="form-input guide-text" id="apiKey" 
+                                   placeholder="例如：sk-xxxxxxxxxxxxxxxxxxxx"
+                                   value="">
+                            <button type="button" class="toggle-password" id="toggleApiKey">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-hint" id="apiKeyHint">请输入您的API密钥</div>
+                        <div class="form-error" id="apiKeyError">请填写API密钥</div>
+                    </div>
+                    
+                    <div class="form-group model-select-container">
+                        <label class="form-label" for="modelSelect">
+                            <i class="fas fa-robot"></i>
+                            模型选择
+                        </label>
+                        <select class="form-select model-grouped" id="modelSelect" style="display: none;">
+                            <option value="">-- 请先获取模型列表 --</option>
+                        </select>
+                        
+                        <!-- 模型分类容器 -->
+                        <div class="model-groups-container" id="modelGroupsContainer">
+                            <div class="model-search-container" id="modelSearchContainer" style="display: none;">
+                                <input type="text" class="model-search-input" id="modelSearchInput" 
+                                       placeholder="搜索模型...">
+                            </div>
+                            <div id="modelGroupsContent">
+                                <!-- 模型分组将通过JS动态生成 -->
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="model-fetch-btn" id="fetchModelsBtn">
+                            <i class="fas fa-sync-alt"></i>
+                            获取可用模型
+                        </button>
+                        <div class="model-status" id="modelStatus"></div>
+                        <div class="form-hint" id="modelSelectHint">填写API URL和密钥后，点击获取可用模型</div>
+                        
+                        <div class="custom-model-input" id="customModelInput">
+                            <input type="text" class="form-input" id="customModelName" 
+                                   placeholder="输入自定义模型名称，如：gpt-4-turbo">
+                            <div class="form-error" id="customModelError">请输入模型名称</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="modelTemperature">
+                            <i class="fas fa-thermometer-half"></i>
+                            模型温度 (temperature)
+                            <span class="temp-value" id="tempValue">0.8</span>
+                        </label>
+                        <input type="range" class="form-range" id="modelTemperature" 
+                               min="0" max="2" step="0.1" value="0.8">
+                        <div class="range-labels">
+                            <span>精确 (0.0)</span>
+                            <span>平衡 (1.0)</span>
+                            <span>创意 (2.0)</span>
+                        </div>
+                        <div class="form-hint" id="temperatureHint">控制输出的随机性，值越高越有创造性</div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelConfig">取消</button>
+                        <button type="button" class="btn btn-primary" id="saveConfig">保存配置</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 导航栏：只有设置和BBM -->
             <nav class="ink-navbar">
-                <div class="nav-item" data-app="phone" id="nav-phone">
-                    <div class="nav-icon">
-                        <i class="fas fa-phone"></i>
-                    </div>
-                    <div class="nav-name">电话</div>
-                </div>
-                
-                <div class="nav-item" data-app="messages" id="nav-messages">
-                    <div class="nav-icon">
-                        <i class="fas fa-comment-dots"></i>
-                    </div>
-                    <div class="nav-name">信息</div>
-                </div>
-                
                 <div class="nav-item" data-app="settings" id="nav-settings">
                     <div class="nav-icon">
                         <i class="fas fa-cog"></i>
@@ -1431,15 +1415,7 @@
                     <div class="nav-name">设置</div>
                 </div>
                 
-                <!-- 天气导航项 -->
-                <div class="nav-item" data-app="weather" id="nav-weather">
-                    <div class="nav-icon">
-                        <i class="fas fa-cloud-sun"></i>
-                    </div>
-                    <div class="nav-name">天气</div>
-                </div>
-                
-                <div class="nav-item active" data-app="bbm" id="nav-bbm">
+                <div class="nav-item" data-app="bbm" id="nav-bbm">
                     <div class="nav-icon">
                         <i class="fas fa-comments"></i>
                     </div>
@@ -1457,23 +1433,28 @@
     </div>
 
     <script>
-        // 缓存DOM元素
+        'use strict';
+        
+        // ========== 工具函数 ==========
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+
+        function isValidUrl(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // ========== 缓存DOM元素 ==========
         const DOM = {
-            name: document.getElementById("name"),
-            tag: document.getElementById("tag"),
-            date: document.getElementById("date"),
-            d: document.getElementById("d"),
-            h: document.getElementById("h"),
-            m: document.getElementById("m"),
-            s: document.getElementById("s"),
-            periodStatus: document.getElementById('period-status'),
-            periodDay: document.getElementById('period-day'),
-            periodNext: document.getElementById('period-next'),
-            periodCountdown: document.getElementById('period-countdown'),
-            periodWidget: document.getElementById('period-square-widget'),
-            anniversaryWidget: document.getElementById('anniversary-widget'),
-            appIcons: document.querySelectorAll('.app-icon-borderless'),
-            navItems: document.querySelectorAll('.nav-item'),
+            // 基础元素
             unlockSlider: document.getElementById('unlockSlider'),
             lockScreen: document.getElementById('lockScreen'),
             phoneContainer: document.getElementById('phoneContainer'),
@@ -1482,171 +1463,817 @@
             lockDate: document.getElementById('lockDate'),
             statusBar: document.getElementById('statusBar'),
             physicalHomeButton: document.getElementById('physicalHomeButton'),
-            badgeWidget: document.getElementById('badge-large-widget'),
-            badgeUploadInput: document.getElementById('badgeUploadInput'),
-            badgeUploading: document.getElementById('badgeUploading'),
             homeScreen: document.getElementById('homeScreen'),
             settingsScreen: document.getElementById('settingsScreen'),
             backButton: document.getElementById('backButton'),
             screenEl: document.querySelector('.screen'),
-            body: document.body
+            body: document.body,
+            hideStatusBarToggle: document.getElementById('hideStatusBarToggle'),
+            navBar: document.querySelector('.ink-navbar'),
+            navSettings: document.getElementById('nav-settings'),
+            navBBM: document.getElementById('nav-bbm'),
+            
+            // API设置元素
+            apiSettingsScreen: document.getElementById('apiSettingsScreen'),
+            apiBackButton: document.getElementById('apiBackButton'),
+            configList: document.getElementById('configList'),
+            addNewConfig: document.getElementById('addNewConfig'),
+            apiConfigForm: document.getElementById('apiConfigForm'),
+            apiListSection: document.getElementById('apiListSection'),
+            configName: document.getElementById('configName'),
+            apiUrl: document.getElementById('apiUrl'),
+            apiKey: document.getElementById('apiKey'),
+            toggleApiKey: document.getElementById('toggleApiKey'),
+            modelSelect: document.getElementById('modelSelect'),
+            fetchModelsBtn: document.getElementById('fetchModelsBtn'),
+            modelStatus: document.getElementById('modelStatus'),
+            customModelInput: document.getElementById('customModelInput'),
+            customModelName: document.getElementById('customModelName'),
+            modelTemperature: document.getElementById('modelTemperature'),
+            tempValue: document.getElementById('tempValue'),
+            cancelConfig: document.getElementById('cancelConfig'),
+            saveConfig: document.getElementById('saveConfig'),
+            
+            // 新增：模型分组容器
+            modelGroupsContainer: document.getElementById('modelGroupsContainer'),
+            modelGroupsContent: document.getElementById('modelGroupsContent'),
+            modelSearchContainer: document.getElementById('modelSearchContainer'),
+            modelSearchInput: document.getElementById('modelSearchInput')
         };
 
-        // 应用数据配置
-        const APP_DATA = {
-            anniversary: {
-                NAME: "纪念日",
-                TARGET: "2026-06-18",
-                TYPE: "倒数日"
-            },
-            period: {
-                currentDay: 3,
-                totalDays: 7,
-                nextDate: "9月28日",
-                countdownDays: 14
-            },
-            messages: {
-                calendar: '查看日历和安排日程',
-                health: '跟踪健康状况和运动数据',
-                ao3: '访问Archive of Our Own同人小说库',
-                music: '播放音乐和创建播放列表',
-                worldbook: '浏览全球图书和百科全书',
-                blackbox: '探索神秘工具和实用功能',
-                starselect: '收藏精选内容和个性化推荐',
-                timelog: '记录时间和时间管理工具',
-                phone: '拨打电话和查看通话记录',
-                messages: '发送和查看短信',
-                settings: '调整系统设置和偏好',
-                weather: '查看实时天气和天气预报',
-                bbm: 'BBM即时通讯服务'
-            },
-            appNames: {
-                phone: '电话',
-                messages: '信息', 
-                settings: '设置',
-                weather: '天气',
-                bbm: 'BBM'
-            }
+        // ========== 定时器管理 ==========
+        const TIMERS = {
+            mainUpdate: null
         };
 
-        // 状态管理
+        // ========== 状态管理 ==========
         const STATE = {
             isUnlocking: false,
             isFullscreen: false,
-            unlockEventListenersAdded: false,
             unlockStartY: 0,
             unlockCurrentY: 0,
-            resizeTimeout: null,
-            currentScreen: 'home'
+            currentScreen: 'home',
+            previousScreen: null,
+            isStatusBarHidden: false,
+            editingConfigId: null,
+            isApiKeyVisible: false,
+            isFetchingModels: false,
+            isDragging: false,
+            // 新增：模型分类相关状态
+            availableModels: [],
+            modelGroups: {},
+            selectedModelId: null
         };
 
-        // 纪念日倒计时功能
-        function updateAnniversary() {
-            const target = new Date(APP_DATA.anniversary.TARGET).getTime();
-            const now = Date.now();
-            const diff = Math.max(0, target - now);
+        // ========== 解锁功能 ==========
+        function handleUnlockStart(e) {
+            e.preventDefault();
+            STATE.isDragging = true;
+            STATE.unlockStartY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
             
-            DOM.d.textContent = Math.floor(diff / (1000 * 60 * 60 * 24)).toString().padStart(2, "0");
-            DOM.h.textContent = Math.floor(diff % (1000 * 60 * 60 * 24) / (1000 * 60 * 60)).toString().padStart(2, "0");
-            DOM.m.textContent = Math.floor(diff % (1000 * 60 * 60) / (1000 * 60)).toString().padStart(2, "0");
-            DOM.s.textContent = Math.floor(diff % (1000 * 60) / 1000).toString().padStart(2, "0");
-        }
-
-        // 经期显示更新
-        function updatePeriodDisplay() {
-            const period = APP_DATA.period;
-            
-            DOM.periodDay.textContent = `第${period.currentDay}天`;
-            DOM.periodNext.textContent = `下次: ${period.nextDate}`;
-            const countdownInt = Math.floor(period.countdownDays);
-            DOM.periodCountdown.textContent = countdownInt > 0 ? 
-                `还有${countdownInt}天` : '即将到来';
-            
-            if (period.currentDay <= period.totalDays) {
-                DOM.periodStatus.textContent = '经期中';
-                DOM.periodWidget.classList.add('active');
-            } else if (period.currentDay >= period.totalDays + 10 && 
-                      period.currentDay <= period.totalDays + 14) {
-                DOM.periodStatus.textContent = '排卵期';
-                DOM.periodWidget.classList.remove('active');
-            } else {
-                DOM.periodStatus.textContent = '安全期';
-                DOM.periodWidget.classList.remove('active');
-            }
-        }
-
-        // 应用点击处理
-        function handleAppClick(appElement) {
-            const allApps = DOM.appIcons;
-            allApps.forEach(app => app.classList.remove('active'));
-            
-            appElement.classList.add('active');
-            appElement.style.transform = 'scale(0.95)';
-            
-            setTimeout(() => {
-                appElement.style.transform = '';
-            }, 150);
-            
-            const appData = appElement.getAttribute('data-app');
-            const appName = appElement.querySelector('span').textContent;
-            
-            if (APP_DATA.messages[appData]) {
-                alert(`打开 ${appName}\n${APP_DATA.messages[appData]}`);
+            if (DOM.unlockSlider) {
+                DOM.unlockSlider.classList.add('dragging');
+                DOM.unlockSlider.style.transition = 'none';
             }
             
-            setTimeout(() => {
-                appElement.classList.remove('active');
-            }, 3000);
+            document.addEventListener('mousemove', handleUnlockMove);
+            document.addEventListener('touchmove', handleUnlockMove, { passive: false });
+            document.addEventListener('mouseup', handleUnlockEnd);
+            document.addEventListener('touchend', handleUnlockEnd);
         }
 
-        // 导航栏点击处理
-        function handleNavClick(navElement) {
-            const appName = navElement.getAttribute('data-app');
+        function handleUnlockMove(e) {
+            if (!STATE.isDragging || !DOM.unlockSlider) return;
             
-            if (appName === 'settings') {
-                showSettingsScreen();
-            } else {
-                DOM.navItems.forEach(nav => nav.classList.remove('active'));
+            e.preventDefault();
+            const currentY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            const deltaY = STATE.unlockStartY - currentY;
+            
+            if (deltaY > 0) {
+                const translateY = Math.min(deltaY, 100);
+                DOM.unlockSlider.style.transform = `translateY(-${translateY}px)`;
                 
-                navElement.classList.add('active');
-                navElement.style.transform = 'scale(0.95)';
-                
-                setTimeout(() => {
-                    navElement.style.transform = 'scale(1)';
-                }, 150);
-                
-                if (APP_DATA.messages[appName] && APP_DATA.appNames[appName]) {
-                    alert(`打开 ${APP_DATA.appNames[appName]}\n${APP_DATA.messages[appName]}`);
+                if (deltaY > 60) {
+                    unlockPhone();
                 }
             }
         }
 
-        // 显示设置页面
+        function handleUnlockEnd() {
+            if (!DOM.unlockSlider) return;
+            
+            DOM.unlockSlider.style.transition = 'transform 0.3s';
+            DOM.unlockSlider.style.transform = 'translateY(0)';
+            setTimeout(() => {
+                DOM.unlockSlider.classList.remove('dragging');
+            }, 300);
+            
+            STATE.isDragging = false;
+            
+            document.removeEventListener('mousemove', handleUnlockMove);
+            document.removeEventListener('touchmove', handleUnlockMove);
+            document.removeEventListener('mouseup', handleUnlockEnd);
+            document.removeEventListener('touchend', handleUnlockEnd);
+        }
+
+        function unlockPhone() {
+            if (DOM.lockScreen) {
+                DOM.lockScreen.classList.add('hidden');
+            }
+            if (DOM.phoneContainer) {
+                DOM.phoneContainer.classList.add('unlocked');
+            }
+            handleUnlockEnd();
+        }
+
+        // ========== 页面导航核心函数 ==========
+        
+        // 隐藏所有屏幕
+        function hideAllScreens() {
+            if (DOM.homeScreen) {
+                DOM.homeScreen.classList.add('hidden');
+            }
+            if (DOM.settingsScreen) {
+                DOM.settingsScreen.classList.remove('active');
+            }
+            if (DOM.apiSettingsScreen) {
+                DOM.apiSettingsScreen.classList.remove('active');
+            }
+        }
+
+        // 显示主屏幕
+        function showHomeScreen() {
+            hideAllScreens();
+            
+            if (DOM.homeScreen) {
+                DOM.homeScreen.classList.remove('hidden');
+            }
+            
+            STATE.currentScreen = 'home';
+            STATE.previousScreen = null;
+            
+            if (DOM.navBar) {
+                DOM.navBar.style.display = 'flex';
+            }
+            
+            if (DOM.navSettings) DOM.navSettings.classList.remove('active');
+            if (DOM.navBBM) DOM.navBBM.classList.remove('active');
+        }
+
+        // 显示设置屏幕
         function showSettingsScreen() {
-            DOM.homeScreen.style.opacity = '0';
-            DOM.homeScreen.style.pointerEvents = 'none';
-            DOM.settingsScreen.classList.add('active');
+            hideAllScreens();
+            
+            if (DOM.settingsScreen) {
+                DOM.settingsScreen.classList.add('active');
+            }
+            
+            STATE.previousScreen = STATE.currentScreen;
             STATE.currentScreen = 'settings';
             
-            const navBar = document.querySelector('.ink-navbar');
-            navBar.style.display = 'none';
+            if (DOM.navBar) {
+                DOM.navBar.style.display = 'none';
+            }
             
-            DOM.navItems.forEach(nav => nav.classList.remove('active'));
-            document.getElementById('nav-settings').classList.add('active');
+            if (DOM.navSettings) DOM.navSettings.classList.add('active');
+            if (DOM.navBBM) DOM.navBBM.classList.remove('active');
         }
 
-        // 返回主页
-        function showHomeScreen() {
-            DOM.settingsScreen.classList.remove('active');
-            DOM.homeScreen.style.opacity = '1';
-            DOM.homeScreen.style.pointerEvents = 'auto';
-            STATE.currentScreen = 'home';
+        // 显示API设置屏幕
+        function showApiSettingsScreen() {
+            if (DOM.settingsScreen) {
+                DOM.settingsScreen.classList.remove('active');
+            }
+            if (DOM.apiSettingsScreen) {
+                DOM.apiSettingsScreen.classList.add('active');
+            }
             
-            const navBar = document.querySelector('.ink-navbar');
-            navBar.style.display = 'flex';
+            STATE.previousScreen = 'settings';
+            STATE.currentScreen = 'api';
+            
+            showApiList();
         }
 
-        // 时间更新
+        // 从API设置返回
+        function backToSettingsFromApi() {
+            if (DOM.apiSettingsScreen) {
+                DOM.apiSettingsScreen.classList.remove('active');
+            }
+            if (DOM.settingsScreen) {
+                DOM.settingsScreen.classList.add('active');
+            }
+            
+            STATE.currentScreen = 'settings';
+            showApiList();
+        }
+
+        // BBM功能（占位）
+        function showBBMScreen() {
+            alert('BBM功能开发中...');
+        }
+
+        // ========== API配置数据存储 ==========
+        const API_CONFIGS = {
+            configs: [],
+            currentConfigId: null,
+            
+            init() {
+                try {
+                    const saved = localStorage.getItem('blush_mist_api_configs');
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        if (data.configs && Array.isArray(data.configs)) {
+                            this.configs = data.configs;
+                            this.currentConfigId = data.currentConfigId || null;
+                        }
+                    }
+                } catch (e) {
+                    console.error('加载配置失败:', e);
+                }
+            },
+            
+            save() {
+                try {
+                    localStorage.setItem('blush_mist_api_configs', JSON.stringify({
+                        configs: this.configs,
+                        currentConfigId: this.currentConfigId
+                    }));
+                } catch (e) {
+                    console.error('保存配置失败:', e);
+                }
+            },
+            
+            addConfig(config) {
+                const newId = this.configs.length > 0 ? 
+                    Math.max(...this.configs.map(c => c.id)) + 1 : 1;
+                const newConfig = {
+                    id: newId,
+                    ...config,
+                    isActive: false,
+                    createdAt: new Date().toISOString()
+                };
+                this.configs.push(newConfig);
+                
+                if (this.configs.length === 1) {
+                    this.setActiveConfig(newId);
+                }
+                
+                this.save();
+                return newId;
+            },
+            
+            updateConfig(id, updates) {
+                const index = this.configs.findIndex(config => config.id === id);
+                if (index !== -1) {
+                    this.configs[index] = { ...this.configs[index], ...updates };
+                    this.save();
+                    return true;
+                }
+                return false;
+            },
+            
+            deleteConfig(id) {
+                const index = this.configs.findIndex(config => config.id === id);
+                if (index !== -1) {
+                    this.configs.splice(index, 1);
+                    
+                    if (id === this.currentConfigId) {
+                        this.currentConfigId = this.configs.length > 0 ? this.configs[0].id : null;
+                        if (this.currentConfigId) {
+                            this.setActiveConfig(this.currentConfigId);
+                        }
+                    }
+                    this.save();
+                    return true;
+                }
+                return false;
+            },
+            
+            setActiveConfig(id) {
+                this.configs.forEach(config => {
+                    config.isActive = config.id === id;
+                });
+                
+                if (this.configs.some(config => config.id === id)) {
+                    this.currentConfigId = id;
+                    this.save();
+                    return true;
+                }
+                return false;
+            }
+        };
+
+        // ========== API模型获取和分类功能 ==========
+        async function fetchAvailableModels() {
+            const apiUrl = DOM.apiUrl ? DOM.apiUrl.value.trim() : '';
+            const apiKey = DOM.apiKey ? DOM.apiKey.value.trim() : '';
+            
+            if (!apiUrl) {
+                showModelStatus('error', '请先填写API URL');
+                return;
+            }
+            
+            if (!isValidUrl(apiUrl)) {
+                showModelStatus('error', 'API URL格式不正确');
+                return;
+            }
+            
+            if (!apiKey) {
+                showModelStatus('error', '请先填写API密钥');
+                return;
+            }
+            
+            STATE.isFetchingModels = true;
+            updateFetchButtonState();
+            showModelStatus('loading', '正在获取模型列表...');
+            
+            try {
+                let modelsEndpoint = apiUrl.replace(/\/+$/, '');
+                
+                if (modelsEndpoint.includes('api.openai.com')) {
+                    modelsEndpoint += '/v1/models';
+                } else if (modelsEndpoint.includes('api.deepseek.com')) {
+                    modelsEndpoint += '/models';
+                } else if (modelsEndpoint.includes('api.anthropic.com')) {
+                    handleAnthropicModels();
+                    return;
+                } else {
+                    if (!modelsEndpoint.includes('/v1')) {
+                        modelsEndpoint += '/v1';
+                    }
+                    modelsEndpoint += '/models';
+                }
+                
+                const response = await fetch(modelsEndpoint, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                let models = [];
+                
+                if (data.data && Array.isArray(data.data)) {
+                    models = data.data.map(m => ({
+                        id: m.id,
+                        name: m.id,
+                        owned_by: m.owned_by || 'unknown'
+                    }));
+                } else if (Array.isArray(data)) {
+                    models = data.map(m => ({
+                        id: typeof m === 'string' ? m : m.id || m.name,
+                        name: typeof m === 'string' ? m : m.name || m.id,
+                        owned_by: m.owned_by || 'unknown'
+                    }));
+                }
+                
+                if (models.length === 0) {
+                    throw new Error('未找到可用模型');
+                }
+                
+                STATE.availableModels = models;
+                categorizeModels(models);
+                populateModelGroups();
+                showModelStatus('success', `成功获取 ${models.length} 个模型`);
+                
+            } catch (error) {
+                console.error('获取模型列表失败:', error);
+                showModelStatus('error', '获取模型失败，请手动输入');
+                enableCustomModelInput();
+            } finally {
+                STATE.isFetchingModels = false;
+                updateFetchButtonState();
+            }
+        }
+        
+        function categorizeModels(models) {
+            // 清空分组
+            STATE.modelGroups = {};
+            
+            models.forEach(model => {
+                const modelId = model.id.toLowerCase();
+                let category = '其他';
+                
+                // 根据模型ID判断类别
+                if (modelId.includes('gpt-4')) {
+                    category = 'GPT-4系列';
+                } else if (modelId.includes('gpt-3.5')) {
+                    category = 'GPT-3.5系列';
+                } else if (modelId.includes('dall-e')) {
+                    category = '图像生成';
+                } else if (modelId.includes('whisper')) {
+                    category = '语音识别';
+                } else if (modelId.includes('embedding')) {
+                    category = '嵌入模型';
+                } else if (modelId.includes('claude')) {
+                    category = 'Claude系列';
+                } else if (modelId.includes('deepseek')) {
+                    category = 'DeepSeek系列';
+                } else if (modelId.includes('llama')) {
+                    category = 'Llama系列';
+                } else if (modelId.includes('code')) {
+                    category = '代码模型';
+                } else if (modelId.includes('text-')) {
+                    category = '文本模型';
+                } else if (model.owned_by && model.owned_by !== 'unknown') {
+                    category = model.owned_by;
+                }
+                
+                if (!STATE.modelGroups[category]) {
+                    STATE.modelGroups[category] = [];
+                }
+                STATE.modelGroups[category].push(model);
+            });
+            
+            // 对每个分类内的模型按名称排序
+            Object.keys(STATE.modelGroups).forEach(category => {
+                STATE.modelGroups[category].sort((a, b) => a.name.localeCompare(b.name));
+            });
+        }
+        
+        function populateModelGroups() {
+            if (!DOM.modelGroupsContent) return;
+            
+            DOM.modelSelect.style.display = 'none';
+            DOM.modelGroupsContainer.classList.add('visible');
+            
+            // 如果有多个分类，显示搜索框
+            const categoryCount = Object.keys(STATE.modelGroups).length;
+            if (categoryCount > 3) {
+                DOM.modelSearchContainer.style.display = 'block';
+            } else {
+                DOM.modelSearchContainer.style.display = 'none';
+            }
+            
+            let html = '';
+            
+            Object.keys(STATE.modelGroups).sort().forEach(category => {
+                const models = STATE.modelGroups[category];
+                
+                html += `
+                    <div class="model-group" data-category="${category}">
+                        <div class="model-group-header">
+                            <i class="fas fa-folder"></i>
+                            <span>${category} (${models.length})</span>
+                        </div>
+                        <div class="model-option-group">
+                `;
+                
+                models.forEach(model => {
+                    const isSelected = STATE.selectedModelId === model.id;
+                    html += `
+                        <div class="model-option ${isSelected ? 'selected' : ''}" 
+                             data-model-id="${model.id}"
+                             title="${model.name}">
+                            ${model.name}
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            DOM.modelGroupsContent.innerHTML = html;
+            
+            // 添加模型选项点击事件
+            document.querySelectorAll('.model-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const modelId = this.getAttribute('data-model-id');
+                    selectModel(modelId);
+                });
+            });
+        }
+        
+        function selectModel(modelId) {
+            STATE.selectedModelId = modelId;
+            
+            // 更新选中状态
+            document.querySelectorAll('.model-option').forEach(option => {
+                const optionModelId = option.getAttribute('data-model-id');
+                option.classList.toggle('selected', optionModelId === modelId);
+            });
+            
+            // 隐藏自定义模型输入
+            if (DOM.customModelInput) {
+                DOM.customModelInput.style.display = 'none';
+            }
+        }
+        
+        function handleAnthropicModels() {
+            const anthropicModels = [
+                { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', owned_by: 'Anthropic' },
+                { id: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet', owned_by: 'Anthropic' },
+                { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', owned_by: 'Anthropic' },
+                { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', owned_by: 'Anthropic' }
+            ];
+            
+            STATE.availableModels = anthropicModels;
+            categorizeModels(anthropicModels);
+            populateModelGroups();
+            showModelStatus('success', `Anthropic预设模型 ${anthropicModels.length} 个`);
+            STATE.isFetchingModels = false;
+            updateFetchButtonState();
+        }
+        
+        function showModelStatus(type, message) {
+            if (!DOM.modelStatus) return;
+            DOM.modelStatus.className = 'model-status ' + type;
+            DOM.modelStatus.textContent = message;
+        }
+        
+        function updateFetchButtonState() {
+            if (!DOM.fetchModelsBtn) return;
+            
+            if (STATE.isFetchingModels) {
+                DOM.fetchModelsBtn.classList.add('loading');
+                DOM.fetchModelsBtn.disabled = true;
+                DOM.fetchModelsBtn.innerHTML = '<i class="fas fa-spinner"></i> 获取中...';
+            } else {
+                DOM.fetchModelsBtn.classList.remove('loading');
+                DOM.fetchModelsBtn.disabled = false;
+                DOM.fetchModelsBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 获取可用模型';
+            }
+        }
+        
+        function enableCustomModelInput() {
+            if (!DOM.modelSelect || !DOM.customModelInput) return;
+            
+            DOM.modelSelect.innerHTML = '<option value="__custom__">✏️ 手动输入模型名称</option>';
+            DOM.modelSelect.disabled = false;
+            DOM.modelSelect.style.display = 'block';
+            DOM.modelGroupsContainer.classList.remove('visible');
+            DOM.customModelInput.style.display = 'block';
+        }
+        
+        function getSelectedModel() {
+            if (STATE.selectedModelId) {
+                return STATE.selectedModelId;
+            }
+            
+            if (DOM.modelSelect && DOM.modelSelect.value === '__custom__') {
+                return DOM.customModelName ? DOM.customModelName.value.trim() : '';
+            }
+            return DOM.modelSelect ? DOM.modelSelect.value : '';
+        }
+
+        // ========== 配置列表渲染 ==========
+        function renderConfigList() {
+            if (!DOM.configList) return;
+            
+            if (API_CONFIGS.configs.length === 0) {
+                DOM.configList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-sliders-h"></i>
+                        <p>暂无配置</p>
+                        <p style="font-size: 12px;">点击"添加配置"开始创建</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const fragment = document.createDocumentFragment();
+            
+            API_CONFIGS.configs.forEach(config => {
+                const configElement = document.createElement('div');
+                configElement.className = `config-item ${config.isActive ? 'active' : ''}`;
+                configElement.dataset.id = config.id;
+                
+                configElement.innerHTML = `
+                    <div class="config-info">
+                        <div class="config-name">${escapeHtml(config.name)}</div>
+                        <div class="config-details">
+                            <span class="config-model"><i class="fas fa-robot"></i>${escapeHtml(config.model || '未设置')}</span>
+                            <span>温度: ${escapeHtml(config.temperature || '0.8')}</span>
+                        </div>
+                    </div>
+                    <div class="config-actions">
+                        <button class="config-btn edit-config" title="编辑"><i class="fas fa-edit"></i></button>
+                        <button class="config-btn delete-config" title="删除"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                
+                configElement.addEventListener('click', (e) => {
+                    if (!e.target.closest('.config-btn')) {
+                        switchActiveConfig(config.id);
+                    }
+                });
+                
+                const editBtn = configElement.querySelector('.edit-config');
+                if (editBtn) {
+                    editBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        editConfig(config.id);
+                    });
+                }
+                
+                const deleteBtn = configElement.querySelector('.delete-config');
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteConfig(config.id);
+                    });
+                }
+                
+                fragment.appendChild(configElement);
+            });
+            
+            DOM.configList.innerHTML = '';
+            DOM.configList.appendChild(fragment);
+        }
+
+        // ========== 配置表单操作 ==========
+        function showApiList() {
+            if (DOM.apiListSection) {
+                DOM.apiListSection.classList.remove('hidden');
+            }
+            if (DOM.apiConfigForm) {
+                DOM.apiConfigForm.classList.remove('active');
+            }
+            renderConfigList();
+        }
+
+        function showApiForm() {
+            if (DOM.apiListSection) {
+                DOM.apiListSection.classList.add('hidden');
+            }
+            if (DOM.apiConfigForm) {
+                DOM.apiConfigForm.classList.add('active');
+            }
+            
+            // 重置模型选择状态
+            STATE.selectedModelId = null;
+            STATE.availableModels = [];
+            STATE.modelGroups = {};
+            
+            if (DOM.modelSelect) {
+                DOM.modelSelect.innerHTML = '<option value="">-- 请先获取模型列表 --</option>';
+                DOM.modelSelect.style.display = 'none';
+            }
+            if (DOM.modelGroupsContainer) {
+                DOM.modelGroupsContainer.classList.remove('visible');
+                DOM.modelGroupsContent.innerHTML = '';
+            }
+            if (DOM.modelStatus) {
+                DOM.modelStatus.className = 'model-status';
+            }
+            if (DOM.customModelInput) {
+                DOM.customModelInput.style.display = 'none';
+            }
+            if (DOM.modelSearchContainer) {
+                DOM.modelSearchContainer.style.display = 'none';
+            }
+        }
+
+        function clearFormErrors() {
+            const errorInputs = document.querySelectorAll('.form-input.error');
+            errorInputs.forEach(input => input.classList.remove('error'));
+            
+            const errorMessages = document.querySelectorAll('.form-error');
+            errorMessages.forEach(el => el.classList.remove('error-visible'));
+        }
+
+        function showFormError(inputId, message) {
+            const input = DOM[inputId];
+            const errorEl = document.getElementById(`${inputId}Error`);
+            
+            if (input) {
+                input.classList.add('error');
+                input.focus();
+            }
+            if (errorEl) {
+                errorEl.textContent = message;
+                errorEl.classList.add('error-visible');
+            }
+        }
+
+        function toggleApiKeyVisibility() {
+            STATE.isApiKeyVisible = !STATE.isApiKeyVisible;
+            if (DOM.apiKey) {
+                DOM.apiKey.type = STATE.isApiKeyVisible ? 'text' : 'password';
+            }
+            if (DOM.toggleApiKey) {
+                const icon = DOM.toggleApiKey.querySelector('i');
+                if (icon) {
+                    icon.className = STATE.isApiKeyVisible ? 'fas fa-eye-slash' : 'fas fa-eye';
+                }
+            }
+        }
+
+        function switchActiveConfig(id) {
+            if (API_CONFIGS.setActiveConfig(id)) {
+                renderConfigList();
+            }
+        }
+
+        function editConfig(id) {
+            const config = API_CONFIGS.configs.find(c => c.id === id);
+            if (!config) return;
+            
+            STATE.editingConfigId = id;
+            STATE.selectedModelId = config.model;
+            showApiForm();
+            
+            if (DOM.configName) DOM.configName.value = config.name || '';
+            if (DOM.apiUrl) {
+                DOM.apiUrl.value = config.apiUrl || '';
+                // 移除引导文本样式
+                DOM.apiUrl.classList.remove('guide-text');
+            }
+            if (DOM.apiKey) {
+                DOM.apiKey.value = config.apiKey || '';
+                // 移除引导文本样式
+                DOM.apiKey.classList.remove('guide-text');
+            }
+            if (DOM.modelTemperature) DOM.modelTemperature.value = config.temperature || 0.8;
+            if (DOM.tempValue) DOM.tempValue.textContent = config.temperature || 0.8;
+            
+            if (config.model) {
+                // 如果之前有获取过模型，显示分组
+                if (STATE.availableModels.length > 0) {
+                    const model = STATE.availableModels.find(m => m.id === config.model);
+                    if (model) {
+                        categorizeModels(STATE.availableModels);
+                        populateModelGroups();
+                        selectModel(config.model);
+                    } else {
+                        // 模型不在列表中，显示自定义输入
+                        enableCustomModelInput();
+                        if (DOM.customModelName) {
+                            DOM.customModelName.value = config.model;
+                        }
+                    }
+                } else {
+                    // 还没有获取模型，显示选择框
+                    DOM.modelSelect.innerHTML = `<option value="${escapeHtml(config.model)}">${escapeHtml(config.model)}</option><option value="__custom__">✏️ 手动输入...</option>`;
+                    DOM.modelSelect.style.display = 'block';
+                }
+            }
+        }
+
+        function saveConfig() {
+            clearFormErrors();
+            
+            const selectedModel = getSelectedModel();
+            
+            const configData = {
+                name: DOM.configName ? DOM.configName.value.trim() : '',
+                apiUrl: DOM.apiUrl ? DOM.apiUrl.value.trim() : '',
+                apiKey: DOM.apiKey ? DOM.apiKey.value.trim() : '',
+                model: selectedModel,
+                temperature: DOM.modelTemperature ? parseFloat(DOM.modelTemperature.value) : 0.8
+            };
+            
+            if (!configData.name) {
+                showFormError('configName', '请填写配置名称');
+                return;
+            }
+            
+            if (!configData.apiUrl || !isValidUrl(configData.apiUrl)) {
+                showFormError('apiUrl', '请输入有效的API URL');
+                return;
+            }
+            
+            if (!configData.apiKey) {
+                showFormError('apiKey', '请填写API密钥');
+                return;
+            }
+            
+            if (!configData.model) {
+                alert('请选择或输入模型');
+                return;
+            }
+            
+            if (STATE.editingConfigId) {
+                API_CONFIGS.updateConfig(STATE.editingConfigId, configData);
+                alert('配置已更新');
+            } else {
+                API_CONFIGS.addConfig(configData);
+                alert('配置已保存');
+            }
+            
+            showApiList();
+        }
+
+        function deleteConfig(id) {
+            const config = API_CONFIGS.configs.find(c => c.id === id);
+            if (!config) return;
+            
+            if (confirm(`确定要删除配置 "${escapeHtml(config.name)}" 吗？`)) {
+                API_CONFIGS.deleteConfig(id);
+                renderConfigList();
+            }
+        }
+
+        // ========== 时间更新 ==========
         function updateTime() {
             try {
                 const now = new Date();
@@ -1657,341 +2284,278 @@
                 });
                 const dateString = now.toLocaleDateString('zh-CN', { 
                     weekday: 'long', 
-                    year: 'numeric', 
                     month: 'long', 
                     day: 'numeric' 
                 });
                 
-                DOM.currentTime.textContent = timeString;
-                DOM.lockTime.textContent = timeString;
-                DOM.lockDate.textContent = dateString;
+                if (DOM.currentTime) DOM.currentTime.textContent = timeString;
+                if (DOM.lockTime) DOM.lockTime.textContent = timeString;
+                if (DOM.lockDate) DOM.lockDate.textContent = dateString;
             } catch (error) {
                 console.error('更新时间时出错:', error);
             }
         }
 
-        // 解锁功能
-        function startUnlock(e) {
-            STATE.isUnlocking = true;
-            STATE.unlockStartY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-            DOM.unlockSlider.style.transition = 'none';
-            
-            document.addEventListener('mousemove', moveUnlock);
-            document.addEventListener('touchmove', moveUnlock, { passive: false });
-            document.addEventListener('mouseup', endUnlock);
-            document.addEventListener('touchend', endUnlock);
+        function updateAllTimers() {
+            updateTime();
         }
 
-        function moveUnlock(e) {
-            if (!STATE.isUnlocking) return;
+        // ========== 状态栏隐藏功能 ==========
+        function toggleStatusBar() {
+            if (!DOM.hideStatusBarToggle) return;
             
-            e.preventDefault();
-            STATE.unlockCurrentY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-            const deltaY = STATE.unlockStartY - STATE.unlockCurrentY;
+            STATE.isStatusBarHidden = DOM.hideStatusBarToggle.checked;
             
-            if (deltaY > 0) {
-                DOM.unlockSlider.style.transform = `translateY(-${Math.min(deltaY, 100)}px)`;
-                
-                if (deltaY > 80) {
-                    unlockPhone();
-                }
+            if (DOM.statusBar) {
+                DOM.statusBar.classList.toggle('hidden', STATE.isStatusBarHidden);
             }
         }
 
-        function endUnlock() {
-            if (!STATE.isUnlocking) return;
-            
-            STATE.isUnlocking = false;
-            DOM.unlockSlider.style.transition = 'transform 0.3s';
-            DOM.unlockSlider.style.transform = 'translateY(0)';
-            
-            document.removeEventListener('mousemove', moveUnlock);
-            document.removeEventListener('touchmove', moveUnlock);
-            document.removeEventListener('mouseup', endUnlock);
-            document.removeEventListener('touchend', endUnlock);
-        }
-
-        function unlockPhone() {
-            DOM.lockScreen.classList.add('hidden');
-            DOM.unlockSlider.style.transform = 'translateY(0)';
-            DOM.phoneContainer.classList.add('unlocked');
-        }
-
-        function lockPhone() {
-            DOM.lockScreen.classList.remove('hidden');
-            DOM.phoneContainer.classList.remove('unlocked');
-        }
-
-        // 计算并应用全屏缩放比例
+        // ========== 全屏功能 ==========
         function updateFullscreenScale() {
-            if (!STATE.isFullscreen) return;
+            if (!STATE.isFullscreen || !DOM.phoneContainer) return;
             
-            const originalWidth = 320;
-            const originalHeight = 640;
-            
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-            
-            // 计算宽高各自的缩放比例，取较小值保证完整显示
-            const scaleX = screenWidth / originalWidth;
-            const scaleY = screenHeight / originalHeight;
-            const scale = Math.min(scaleX, scaleY);
-            
-            // 应用缩放和居中
-            DOM.phoneContainer.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            requestAnimationFrame(() => {
+                const scaleX = window.innerWidth / 320;
+                const scaleY = window.innerHeight / 640;
+                const scale = Math.min(scaleX, scaleY);
+                DOM.phoneContainer.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            });
         }
 
-        // 全屏功能
         function toggleFullscreen() {
             STATE.isFullscreen = !STATE.isFullscreen;
-            DOM.phoneContainer.classList.toggle('fullscreen', STATE.isFullscreen);
-            DOM.body.classList.toggle('fullscreen-body', STATE.isFullscreen);
+            
+            if (DOM.phoneContainer) {
+                DOM.phoneContainer.classList.toggle('fullscreen', STATE.isFullscreen);
+            }
+            if (DOM.body) {
+                DOM.body.classList.toggle('fullscreen-body', STATE.isFullscreen);
+            }
             
             if (STATE.isFullscreen) {
                 unlockPhone();
                 updateFullscreenScale();
             } else {
-                // 退出全屏，重置 transform
-                DOM.phoneContainer.style.transform = '';
-            }
-        }
-
-        // 吧唧上传功能
-        function handleBadgeUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            DOM.badgeUploading.style.display = 'block';
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                DOM.badgeWidget.style.backgroundImage = `url(${event.target.result})`;
-                
-                setTimeout(() => {
-                    DOM.badgeUploading.style.display = 'none';
-                    setTimeout(() => {
-                        alert('吧唧图片已更新！');
-                    }, 100);
-                }, 500);
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // 模拟经期数据更新
-        function updatePeriodData() {
-            const period = APP_DATA.period;
-            period.currentDay = (period.currentDay % 35) + 1;
-            period.countdownDays = Math.max(0, period.countdownDays - 1);
-            
-            if (period.countdownDays <= 0) {
-                const nextDate = new Date();
-                nextDate.setDate(nextDate.getDate() + 28);
-                const month = nextDate.getMonth() + 1;
-                const day = nextDate.getDate();
-                period.nextDate = `${month}月${day}日`;
-                period.countdownDays = 28;
-            }
-            
-            updatePeriodDisplay();
-        }
-
-        // 设置项点击处理
-        function handleSettingClick(settingElement, settingName) {
-            settingElement.style.transform = 'scale(0.98)';
-            
-            setTimeout(() => {
-                settingElement.style.transform = '';
-            }, 150);
-            
-            const settingMessages = {
-                'account': '账户管理\n登录、注销和管理您的粉雾账户',
-                'sync': '数据同步设置\n自动同步联系人、日历和应用数据',
-                'privacy': '隐私保护设置\n管理应用权限和个人数据隐私',
-                'api': 'API 网络设置\n配置API接口地址和网络参数\n默认API：api.blush-mist.com\n状态：已连接',
-                'asr': 'ASR 服务设置\n自动语音识别API配置\n支持语言：普通话、英语、日语\n识别准确率：98.2%\nAPI端点：asr.api.blush-mist.com\n状态：可用',
-                'tts': 'TTS 服务设置\n文本转语音API配置\n语音库：自然语音、情感语音\n支持语言：中、英、日、韩\n语速：可调节\nAPI端点：tts.api.blush-mist.com\n状态：已连接',
-                'owm': 'OWM 天气服务设置\nOpenWeatherMap API配置\nAPI密钥：已配置\n默认城市：自动定位\n单位：摄氏度\n更新频率：1小时\n状态：在线',
-                'mt': 'MT 翻译服务设置\n机器翻译API配置\n支持语言对：中英、中日、中韩、英日等\n翻译引擎：神经网络翻译\nAPI端点：mt.api.blush-mist.com\n状态：运行中',
-                'push': 'PUSH 推送服务设置\n推送通知API配置\n服务提供商：FCM/APNs\n推送类型：消息、提醒、更新\n频率限制：已配置\n状态：活跃',
-                'darkmode': '深色模式设置\n自动或手动切换深色界面主题',
-                'theme': '主题颜色设置\n选择您喜欢的界面主色调',
-                'wallpaper': '壁纸设置\n选择锁屏和桌面壁纸',
-                'font': '字体设置\n当前字体：默认字体\n可用字体：系统默认、圆体、楷体\n字体大小：中\n粗细：常规',
-                'device': '设备信息\nBlush Mist 粉雾手机\n版本：Blush OS 3.2.1\n存储：128GB\n内存：8GB',
-                'update': '软件更新\n当前版本：Blush OS 3.2.1\n已是最新版本',
-                'storage': '存储空间管理\n已用64GB，可用64GB\n清理缓存和卸载应用',
-                'legal': '法律信息\n查看软件许可证和用户协议'
-            };
-            
-            if (settingMessages[settingName]) {
-                alert(settingMessages[settingName]);
-            }
-        }
-
-        // 设置开关变化处理
-        function handleSettingToggle(toggleElement, settingName) {
-            const settingMessages = {
-                'sync': `数据同步 ${toggleElement.checked ? '已开启' : '已关闭'}`,
-                'asr': `ASR服务 ${toggleElement.checked ? '已启用' : '已禁用'}`,
-                'tts': `TTS服务 ${toggleElement.checked ? '已启用' : '已禁用'}`,
-                'darkmode': `深色模式 ${toggleElement.checked ? '已开启' : '已关闭'}`
-            };
-            
-            if (settingMessages[settingName]) {
-                alert(settingMessages[settingName]);
-            }
-        }
-
-        // 防抖函数
-        function debounce(func, wait) {
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(STATE.resizeTimeout);
-                    func(...args);
-                };
-                clearTimeout(STATE.resizeTimeout);
-                STATE.resizeTimeout = setTimeout(later, wait);
-            };
-        }
-
-        // 事件监听器设置
-        function setupEventListeners() {
-            // 纪念日倒计时初始化
-            DOM.name.textContent = APP_DATA.anniversary.NAME;
-            DOM.tag.textContent = APP_DATA.anniversary.TYPE;
-            DOM.date.textContent = `目标日期: ${APP_DATA.anniversary.TARGET}`;
-            
-            // 应用图标点击
-            DOM.appIcons.forEach(icon => {
-                icon.addEventListener('click', () => handleAppClick(icon));
-            });
-            
-            // 导航栏点击
-            DOM.navItems.forEach(item => {
-                item.addEventListener('click', () => handleNavClick(item));
-            });
-            
-            // 经期小组件点击
-            DOM.periodWidget.addEventListener('click', function() {
-                const period = APP_DATA.period;
-                const status = period.currentDay <= period.totalDays ? '经期中' : 
-                             (period.currentDay >= period.totalDays + 10 && 
-                              period.currentDay <= period.totalDays + 14) ? '排卵期' : '安全期';
-                
-                alert(`经期助手\n状态：${status}\n当前：第${period.currentDay}天\n周期：${period.totalDays}天\n下次：${period.nextDate}\n剩余：${Math.floor(period.countdownDays)}天`);
-            });
-            
-            // 纪念日小组件点击
-            DOM.anniversaryWidget.addEventListener('click', function() {
-                alert('纪念日倒计时\n距离纪念日还有161天\n目标日期：2026-06-18');
-            });
-            
-            // 解锁功能
-            DOM.unlockSlider.addEventListener('mousedown', startUnlock);
-            DOM.unlockSlider.addEventListener('touchstart', startUnlock);
-            
-            // 锁屏双击锁定
-            DOM.lockScreen.addEventListener('dblclick', lockPhone);
-            
-            // 物理Home键
-            DOM.physicalHomeButton.addEventListener('click', function() {
-                if (!DOM.lockScreen.classList.contains('hidden')) {
-                    unlockPhone();
-                } else {
-                    if (STATE.currentScreen === 'settings') {
-                        showHomeScreen();
-                    } else {
-                        DOM.navItems.forEach(nav => nav.classList.remove('active'));
-                        document.getElementById('nav-bbm').classList.add('active');
-                        alert('已返回主屏幕');
-                    }
+                if (DOM.phoneContainer) {
+                    DOM.phoneContainer.style.transform = '';
                 }
-            });
+            }
+        }
+
+        // ========== 搜索功能 ==========
+        function setupModelSearch() {
+            if (!DOM.modelSearchInput) return;
             
-            // 吧唧上传
-            DOM.badgeWidget.addEventListener('click', () => DOM.badgeUploadInput.click());
-            DOM.badgeUploadInput.addEventListener('change', handleBadgeUpload);
-            
-            // 状态栏全屏切换
-            DOM.statusBar.addEventListener('click', toggleFullscreen);
-            
-            // 设置页面返回按钮
-            DOM.backButton.addEventListener('click', showHomeScreen);
-            
-            // 设置项点击 - 账户与同步
-            document.getElementById('accountSetting').addEventListener('click', () => handleSettingClick(document.getElementById('accountSetting'), 'account'));
-            document.getElementById('privacySetting').addEventListener('click', () => handleSettingClick(document.getElementById('privacySetting'), 'privacy'));
-            
-            // 设置项点击 - 网络与连接
-            document.getElementById('apiSetting').addEventListener('click', () => handleSettingClick(document.getElementById('apiSetting'), 'api'));
-            document.getElementById('asrSetting').addEventListener('click', () => handleSettingClick(document.getElementById('asrSetting'), 'asr'));
-            document.getElementById('ttsSetting').addEventListener('click', () => handleSettingClick(document.getElementById('ttsSetting'), 'tts'));
-            document.getElementById('owmSetting').addEventListener('click', () => handleSettingClick(document.getElementById('owmSetting'), 'owm'));
-            document.getElementById('mtSetting').addEventListener('click', () => handleSettingClick(document.getElementById('mtSetting'), 'mt'));
-            document.getElementById('pushSetting').addEventListener('click', () => handleSettingClick(document.getElementById('pushSetting'), 'push'));
-            
-            // 设置项点击 - 显示与主题
-            document.getElementById('themeSetting').addEventListener('click', () => handleSettingClick(document.getElementById('themeSetting'), 'theme'));
-            document.getElementById('wallpaperSetting').addEventListener('click', () => handleSettingClick(document.getElementById('wallpaperSetting'), 'wallpaper'));
-            document.getElementById('fontSetting').addEventListener('click', () => handleSettingClick(document.getElementById('fontSetting'), 'font'));
-            
-            // 设置项点击 - 关于本机
-            document.getElementById('deviceInfo').addEventListener('click', () => handleSettingClick(document.getElementById('deviceInfo'), 'device'));
-            document.getElementById('softwareUpdate').addEventListener('click', () => handleSettingClick(document.getElementById('softwareUpdate'), 'update'));
-            document.getElementById('storageInfo').addEventListener('click', () => handleSettingClick(document.getElementById('storageInfo'), 'storage'));
-            document.getElementById('legalInfo').addEventListener('click', () => handleSettingClick(document.getElementById('legalInfo'), 'legal'));
-            
-            // 设置开关变化
-            const syncToggle = document.getElementById('syncToggle');
-            const darkModeToggle = document.getElementById('darkModeToggle');
-            
-            syncToggle.addEventListener('change', () => handleSettingToggle(syncToggle, 'sync'));
-            darkModeToggle.addEventListener('change', () => handleSettingToggle(darkModeToggle, 'darkmode'));
-            
-            // 设置页面其他设置项点击
-            const otherSettingItems = document.querySelectorAll('.settings-item:not([id])');
-            otherSettingItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    const itemName = this.querySelector('.item-name').textContent;
-                    this.style.transform = 'scale(0.98)';
+            DOM.modelSearchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                
+                if (!searchTerm) {
+                    // 显示所有分类
+                    document.querySelectorAll('.model-group').forEach(group => {
+                        group.style.display = 'block';
+                    });
+                    return;
+                }
+                
+                document.querySelectorAll('.model-group').forEach(group => {
+                    const category = group.getAttribute('data-category');
+                    let hasMatch = false;
                     
-                    setTimeout(() => {
-                        this.style.transform = '';
-                    }, 150);
+                    // 检查分类名称是否匹配
+                    if (category.toLowerCase().includes(searchTerm)) {
+                        hasMatch = true;
+                    }
                     
-                    alert(`打开 ${itemName}\n这是 ${itemName} 设置页面`);
+                    // 检查该分类下的模型是否匹配
+                    const modelOptions = group.querySelectorAll('.model-option');
+                    modelOptions.forEach(option => {
+                        const modelName = option.textContent.toLowerCase();
+                        if (modelName.includes(searchTerm)) {
+                            hasMatch = true;
+                            option.style.display = 'block';
+                        } else {
+                            option.style.display = 'none';
+                        }
+                    });
+                    
+                    // 显示或隐藏整个分类
+                    group.style.display = hasMatch ? 'block' : 'none';
                 });
             });
-            
-            // 窗口大小调整 - 更新全屏缩放
-            window.addEventListener('resize', debounce(() => {
-                if (STATE.isFullscreen) {
-                    updateFullscreenScale();
-                }
-            }, 100));
         }
 
-        // 初始化函数
+        // ========== 事件监听器设置 ==========
+        function setupEventListeners() {
+            if (DOM.unlockSlider) {
+                DOM.unlockSlider.addEventListener('mousedown', handleUnlockStart);
+                DOM.unlockSlider.addEventListener('touchstart', handleUnlockStart);
+            }
+            
+            if (DOM.physicalHomeButton) {
+                DOM.physicalHomeButton.addEventListener('click', () => {
+                    if (DOM.lockScreen && !DOM.lockScreen.classList.contains('hidden')) {
+                        unlockPhone();
+                    } else if (STATE.currentScreen === 'api') {
+                        if (DOM.apiConfigForm && DOM.apiConfigForm.classList.contains('active')) {
+                            showApiList();
+                        } else {
+                            backToSettingsFromApi();
+                        }
+                    } else if (STATE.currentScreen === 'settings') {
+                        showHomeScreen();
+                    }
+                });
+            }
+            
+            if (DOM.statusBar) {
+                DOM.statusBar.addEventListener('click', toggleFullscreen);
+            }
+            
+            if (DOM.backButton) {
+                DOM.backButton.addEventListener('click', showHomeScreen);
+            }
+            
+            // 导航栏事件
+            if (DOM.navSettings) {
+                DOM.navSettings.addEventListener('click', showSettingsScreen);
+            }
+            
+            if (DOM.navBBM) {
+                DOM.navBBM.addEventListener('click', showBBMScreen);
+            }
+            
+            const apiSetting = document.getElementById('apiSetting');
+            if (apiSetting) {
+                apiSetting.addEventListener('click', showApiSettingsScreen);
+            }
+            
+            if (DOM.apiBackButton) {
+                DOM.apiBackButton.addEventListener('click', () => {
+                    if (DOM.apiConfigForm && DOM.apiConfigForm.classList.contains('active')) {
+                        showApiList();
+                    } else {
+                        backToSettingsFromApi();
+                    }
+                });
+            }
+            
+            if (DOM.addNewConfig) {
+                DOM.addNewConfig.addEventListener('click', () => {
+                    STATE.editingConfigId = null;
+                    clearFormErrors();
+                    if (DOM.configName) DOM.configName.value = '';
+                    if (DOM.apiUrl) {
+                        DOM.apiUrl.value = '';
+                        DOM.apiUrl.classList.add('guide-text');
+                    }
+                    if (DOM.apiKey) {
+                        DOM.apiKey.value = '';
+                        DOM.apiKey.classList.add('guide-text');
+                    }
+                    if (DOM.modelTemperature) DOM.modelTemperature.value = 0.8;
+                    if (DOM.tempValue) DOM.tempValue.textContent = '0.8';
+                    showApiForm();
+                });
+            }
+            
+            if (DOM.cancelConfig) {
+                DOM.cancelConfig.addEventListener('click', showApiList);
+            }
+            
+            if (DOM.saveConfig) {
+                DOM.saveConfig.addEventListener('click', saveConfig);
+            }
+            
+            if (DOM.toggleApiKey) {
+                DOM.toggleApiKey.addEventListener('click', toggleApiKeyVisibility);
+            }
+            
+            if (DOM.modelTemperature) {
+                DOM.modelTemperature.addEventListener('input', function() {
+                    if (DOM.tempValue) DOM.tempValue.textContent = this.value;
+                });
+            }
+            
+            if (DOM.fetchModelsBtn) {
+                DOM.fetchModelsBtn.addEventListener('click', fetchAvailableModels);
+            }
+            
+            if (DOM.hideStatusBarToggle) {
+                DOM.hideStatusBarToggle.addEventListener('change', toggleStatusBar);
+            }
+            
+            // API URL 和 API Key 的焦点事件
+            if (DOM.apiUrl) {
+                DOM.apiUrl.addEventListener('focus', function() {
+                    this.classList.remove('guide-text');
+                    if (this.value === '') {
+                        this.placeholder = 'https://api.deepseek.com';
+                    }
+                });
+                
+                DOM.apiUrl.addEventListener('blur', function() {
+                    if (this.value === '') {
+                        this.classList.add('guide-text');
+                        this.placeholder = '例如：https://api.deepseek.com';
+                    }
+                });
+            }
+            
+            if (DOM.apiKey) {
+                DOM.apiKey.addEventListener('focus', function() {
+                    this.classList.remove('guide-text');
+                    if (this.value === '') {
+                        this.placeholder = 'sk-xxxxxxxxxxxxxxxxxxxx';
+                    }
+                });
+                
+                DOM.apiKey.addEventListener('blur', function() {
+                    if (this.value === '') {
+                        this.classList.add('guide-text');
+                        this.placeholder = '例如：sk-xxxxxxxxxxxxxxxxxxxx';
+                    }
+                });
+            }
+            
+            window.addEventListener('resize', () => {
+                if (STATE.isFullscreen) updateFullscreenScale();
+            });
+            
+            window.addEventListener('beforeunload', cleanup);
+        }
+
+        // ========== 清理函数 ==========
+        function cleanup() {
+            if (TIMERS.mainUpdate) clearInterval(TIMERS.mainUpdate);
+            
+            document.removeEventListener('mousemove', handleUnlockMove);
+            document.removeEventListener('touchmove', handleUnlockMove);
+            document.removeEventListener('mouseup', handleUnlockEnd);
+            document.removeEventListener('touchend', handleUnlockEnd);
+        }
+
+        // ========== 初始化 ==========
         function init() {
-            setupEventListeners();
-            
-            // 初始化时间
-            updateTime();
-            setInterval(updateTime, 1000);
-            
-            // 初始化倒计时
-            updateAnniversary();
-            setInterval(updateAnniversary, 1000);
-            
-            // 初始化经期显示
-            updatePeriodDisplay();
-            
-            // 模拟经期数据更新
-            setInterval(updatePeriodData, 30000);
+            try {
+                API_CONFIGS.init();
+                setupEventListeners();
+                setupModelSearch();
+                
+                updateAllTimers();
+                TIMERS.mainUpdate = setInterval(updateAllTimers, 1000);
+                
+                console.log('Blush Mist 嘟嘟小手机极简版初始化完成');
+            } catch (error) {
+                console.error('初始化时出错:', error);
+            }
         }
 
-        // 启动应用
-        init();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 </html>
