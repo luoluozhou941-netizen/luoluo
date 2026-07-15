@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Luma 1.10.4 · 初晓</title>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1/src/light/style.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/marked@15/lib/marked.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+<script src="js/00-prompts.js"></script>
+<script src="js/00-prompts-summary.js"></script>
+<script src="js/01-state.js"></script>
+<script src="js/02-utils.js"></script>
+<script src="js/03-markdown.js"></script>
+<script src="js/04-extractors.js"></script>
+<script src="js/05-storage.js"></script>
+<script src="js/06-providers.js"></script>
+<script src="js/07-context.js"></script>
+<script src="js/08-ai-client.js"></script>
+<script src="js/09-render-sidebar.js"></script>
+<script src="js/10-render-chat.js"></script>
+<script src="js/11-render-timeline.js"></script>
+<script src="js/12-render-box.js"></script>
+<script src="js/13-render-todo-health.js"></script>
+<script src="js/14-search.js"></script>
+<script src="js/15-modal-toast.js"></script>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <button class="icon-btn" id="btn-menu"><i class="ph-light ph-list"></i></button>
+    <h2>
+      <span class="title-wrap">
+        <span class="title-main">
+          <span id="conv-title">—</span>
+        </span>
+        <small id="ai-name"></small>
+      </span>
+    </h2>
+    <button class="icon-btn" id="btn-search-top"><i class="ph-light ph-magnifying-glass"></i></button>
+    <button class="icon-btn" id="btn-right"><i class="ph-light ph-push-pin"></i><span class="badge" id="todo-badge" style="display:none">0</span></button>
+  </div>
+  <div class="body">
+    <aside class="col-left" id="col-left">
+      <div class="role-bar" id="role-bar"></div>
+      <div class="role-name">当前：<b id="role-name-cur">初晓 🤍</b></div>
+      <div class="section-label">窗口</div>
+      <div class="conv-list" id="conv-list"></div>
+      <div class="archive-toggle" id="archive-toggle"><i class="ph-light ph-package"></i> 已归档 ▾</div>
+<div class="left-foot">
+  <button class="full" id="btn-new"><i class="ph-light ph-plus"></i> 新窗口</button>
+  <button id="btn-settings"><i class="ph-light ph-gear"></i></button>
+  <button id="btn-export"><i class="ph-light ph-upload-simple"></i> 导出</button>
+  <button id="btn-import"><i class="ph-light ph-download-simple"></i> 导入</button>
+  <input type="file" id="file-import" accept="application/json" hidden>
+</div>
+    </aside>
+    <main class="col-main">
+      <div class="tabs">
+        <div class="tab active" data-tab="chat"><i class="ph-light ph-chat-circle"></i> 共处</div>
+        <div class="tab" data-tab="timeline"><i class="ph-light ph-tree"></i> 记忆树</div>
+        <div class="tab" data-tab="box"><i class="ph-light ph-notebook"></i> 盒子</div>
+      </div>
+      <div class="tab-content">
+       <div class="tab-pane active" data-tab="chat">
+          <div class="model-chip-bar" id="model-chip-bar"></div>
+          <div id="context-bar-area"></div>
+          <div class="timeline-chat" id="chat-stream"></div>
+          <div class="countdown hidden" id="countdown">
+            <span><i class="ph-light ph-clock-countdown"></i> <b id="cd-time">2:00</b> 后初晓自动回复</span>
+            <button id="btn-reply-now"><i class="ph-light ph-paper-plane-tilt"></i> 现在回复</button>
+          </div>
+          <div class="input-area">
+            <div class="attach-row" id="attach-row"></div>
+            <div class="input-row">
+              <button class="btn-circle" id="btn-pick-img"><i class="ph-light ph-image"></i></button>
+              <input type="file" id="file-img" accept="image/*" hidden>
+              <button class="btn-circle" id="btn-fs-edit" title="放大编辑"><i class="ph-light ph-frame-corners"></i></button>
+              <textarea id="input-text" placeholder="对初晓说点什么…" rows="1"></textarea>
+              <button class="btn-send" id="btn-send">发送</button>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" data-tab="timeline">
+          <div class="tl-wrap" id="tl-wrap"></div>
+        </div>
+        <div class="tab-pane" data-tab="box">
+          <div class="box-root">
+            <div class="box-subtabs" id="box-subtabs"></div>
+            <div class="box-body" id="box-body"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <aside class="col-right" id="col-right">
+      <div class="todo-panel">
+        <div class="todo-header">
+          <h3><i class="ph-light ph-push-pin"></i> 便利贴</h3>
+          <button class="btn-add" id="btn-todo-add" title="手动添加"><i class="ph-light ph-plus"></i></button>
+        </div>
+        <div class="todo-tabs" id="todo-tabs"></div>
+        <div class="todo-list" id="todo-list"></div>
+      </div>
+    </aside>
+    <div class="drawer-mask" id="mask"></div>
+  </div>
+</div>
+<div class="toast-wrap" id="toast-wrap"></div>
+<script src="js/99-main.js"></script>
+</body>
+</html>
